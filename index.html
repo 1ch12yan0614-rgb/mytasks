@@ -113,7 +113,6 @@
     .fab { position: fixed; bottom: 20px; right: 20px; width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #3E63DD, #2E4EC2); box-shadow: 0 6px 20px rgba(62,99,221,0.35); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 100; }
     .fab svg { width: 26px; height: 26px; stroke: #fff; stroke-width: 2.5; }
 
-    /* ★モーダルを中央配置に変更（キーボードと被らないようにする） */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -121,7 +120,7 @@
       backdrop-filter: blur(2px);
       z-index: 200;
       display: none;
-      align-items: center; /* 中央揃え */
+      align-items: center;
       justify-content: center;
       padding: 16px;
     }
@@ -295,6 +294,9 @@
     let currentTab = 'tasks';
     let sortableInstance = null;
     let noteSaveTimeout = null;
+    
+    // ★開いている親タスクのIDを記憶するセット（再描画でも閉じない）
+    let expandedTaskIds = new Set();
 
     function getLocalDateString(d = new Date()) {
       const year = d.getFullYear();
@@ -310,7 +312,7 @@
       loadAllData();
       initSortable();
       initAutoSaveNote();
-      initKeyboardSubmit(); // ★Enter/Goキーでの保存リスナー
+      initKeyboardSubmit();
     };
 
     function loadAllData() {
@@ -452,8 +454,9 @@
     }
 
     function createCardElement(task, subtasks, subDoneCount) {
+      const isExpanded = expandedTaskIds.has(task.id);
       const card = document.createElement('div');
-      card.className = `task-card ${task.completed ? 'is-done' : ''}`;
+      card.className = `task-card ${task.completed ? 'is-done' : ''} ${isExpanded ? 'is-expanded' : ''}`;
       card.setAttribute('data-id', task.id);
       
       let p = String(task.priority || '3').trim();
@@ -486,7 +489,7 @@
             </button>
           </div>
         </div>
-        <div class="subtasks-container" id="sub-${task.id}">
+        <div class="subtasks-container ${isExpanded ? 'expanded' : ''}" id="sub-${task.id}">
           <div>
             ${subtasks.map(sub => `
               <div class="subtask-item ${sub.completed ? 'is-done' : ''}">
@@ -503,17 +506,30 @@
       return card;
     }
 
+    // ★サブタスク開閉時に状態をSetに記録
     function toggleSubtasks(parentId, contentEl) {
       const sub = document.getElementById(`sub-${parentId}`);
       const card = contentEl.closest('.task-card');
-      if (card) card.classList.toggle('is-expanded');
-      if (sub) sub.classList.toggle('expanded');
+      const isNowExpanded = card.classList.toggle('is-expanded');
+      if (sub) sub.classList.toggle('expanded', isNowExpanded);
+
+      if (isNowExpanded) {
+        expandedTaskIds.add(parentId);
+      } else {
+        expandedTaskIds.delete(parentId);
+      }
     }
 
     function toggleTask(id) {
       const target = tasks.find(t => t.id === id);
       if (!target) return;
       target.completed = !target.completed;
+      
+      // 親タスクが完了になった場合は閉じる、サブタスク完了時は開いた状態をキープ
+      if (!target.parentId && target.completed) {
+        expandedTaskIds.delete(target.id);
+      }
+
       renderTasks();
 
       fetch(GAS_API_URL, {
@@ -546,7 +562,6 @@
       }
     });
 
-    // ★Enter/Goキーで即保存するリスナー
     function initKeyboardSubmit() {
       titleInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
@@ -667,12 +682,13 @@
         };
 
         tasks.push(newTask);
-        renderTasks();
-
+        
+        // サブタスク追加時は親タスクを開いた状態として記憶
         if (parentId) {
-          const sub = document.getElementById(`sub-${parentId}`);
-          if (sub) sub.classList.add('expanded');
+          expandedTaskIds.add(parentId);
         }
+
+        renderTasks();
 
         fetch(GAS_API_URL, {
           method: 'POST',
@@ -688,6 +704,7 @@
 
       modal.classList.remove('active');
       tasks = tasks.filter(t => t.id !== id && t.parentId !== id);
+      expandedTaskIds.delete(id);
       renderTasks();
 
       fetch(GAS_API_URL, {
@@ -696,10 +713,6 @@
         body: JSON.stringify({ action: 'deleteTask', taskId: id })
       });
     };
-
-    // ==========================================
-    // デイリーメモ自動保存
-    // ==========================================
 
     function initAutoSaveNote() {
       const noteInput = document.getElementById('todayNoteInput');
