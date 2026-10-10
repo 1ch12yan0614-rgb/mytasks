@@ -22,7 +22,6 @@
       --primary-light: #EEF2FF;
       --border: #E6E8EC;
       --radius: 18px;
-      --danger: #EF4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif; min-height: 100vh; display: flex; justify-content: center; padding-bottom: 90px; }
@@ -33,12 +32,10 @@
     .date-badge { font-size: 13px; color: var(--text-sub); font-weight: 500; }
     .lock-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
 
-    /* タブ切り替えバー */
     .tab-bar { display: flex; background: #EAECEF; border-radius: 12px; padding: 3px; margin-bottom: 18px; }
     .tab-btn { flex: 1; padding: 8px 0; font-size: 14px; font-weight: 600; text-align: center; border: none; background: transparent; border-radius: 9px; cursor: pointer; color: var(--text-sub); transition: all 0.2s; }
     .tab-btn.active { background: #FFFFFF; color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 
-    /* タスクカード */
     .section-title { font-size: 13px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 4px 10px 4px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
     .task-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(0,0,0,0.03); margin-bottom: 12px; overflow: hidden; }
     .task-main { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
@@ -50,13 +47,14 @@
     .task-title { font-size: 15px; font-weight: 600; color: var(--text-main); word-break: break-word; }
     .task-card.is-done .task-title { color: var(--text-sub); text-decoration: line-through; }
     .task-memo-preview { font-size: 12px; color: var(--text-sub); margin-top: 3px; display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .task-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 11.5px; color: var(--text-sub); }
+    .task-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 11.5px; color: var(--text-sub); flex-wrap: wrap; }
     .subtask-badge { background: var(--primary-light); color: var(--primary); padding: 2px 7px; border-radius: 8px; font-weight: 600; font-size: 11px; }
+    .repeat-badge { background: #F3E8FF; color: #7E22CE; padding: 2px 7px; border-radius: 8px; font-weight: 600; font-size: 11px; }
+    .time-badge { background: #FEF3C7; color: #B45309; padding: 2px 7px; border-radius: 8px; font-weight: 700; font-size: 11px; display: inline-flex; align-items: center; gap: 3px; }
 
     .card-actions { display: flex; align-items: center; gap: 6px; }
     .edit-icon-btn { background: none; border: none; padding: 6px; cursor: pointer; color: #9CA3AF; display: flex; align-items: center; justify-content: center; }
 
-    /* 優先度バッジ */
     .priority-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; min-width: 24px; text-align: center; }
     .p-1 { background: #FEE2E2; color: #DC2626; }
     .p-2 { background: #FFEDD5; color: #EA580C; }
@@ -75,11 +73,9 @@
     .subtask-item.is-done .subtask-title { color: var(--text-sub); text-decoration: line-through; }
     .add-subtask-btn { margin-top: 8px; font-size: 12px; color: var(--primary); font-weight: 600; background: transparent; border: none; cursor: pointer; }
 
-    /* FAB */
     .fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #3E63DD, #2E4EC2); box-shadow: 0 8px 24px rgba(62,99,221,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 100; }
     .fab svg { width: 28px; height: 28px; stroke: #fff; stroke-width: 2.5; }
 
-    /* モーダル */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
     .modal-overlay.active { display: flex; }
     .modal-sheet { width: 100%; max-width: 500px; background: #FFFFFF; border-radius: 24px 24px 0 0; padding: 22px 20px 28px 20px; animation: slideUp 0.25s ease-out; max-height: 90vh; overflow-y: auto; }
@@ -88,7 +84,7 @@
     .form-group { margin-bottom: 12px; }
     .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; }
     .input-text, .input-textarea { width: 100%; padding: 12px 14px; font-size: 15px; border-radius: 12px; border: 1px solid var(--border); background: #F9FAFB; outline: none; font-family: inherit; }
-    .input-textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+    .input-textarea { min-height: 75px; resize: vertical; line-height: 1.5; }
     .form-row { display: flex; gap: 10px; }
     .form-row .form-group { flex: 1; }
     .sheet-actions { display: flex; gap: 10px; margin-top: 18px; }
@@ -97,7 +93,6 @@
     .btn-submit { background: var(--primary); color: #FFF; }
     .btn-delete { background: #FEE2E2; color: #DC2626; flex: 0.6; }
 
-    /* デイリーメモ画面 */
     .daily-note-container { display: flex; flex-direction: column; gap: 16px; }
     .today-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); }
     .today-note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -112,7 +107,6 @@
     .past-note-date { font-size: 14px; font-weight: 700; color: var(--text-main); }
     .past-note-body { margin-top: 10px; font-size: 13.5px; line-height: 1.6; color: #374151; white-space: pre-wrap; word-break: break-word; border-top: 1px dashed var(--border); padding-top: 8px; }
 
-    /* ロック画面 */
     #lockScreen { position: fixed; inset: 0; background: #FFFFFF; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
     .lock-icon-badge { width: 72px; height: 72px; background: #111827; border-radius: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14); }
     .lock-icon-badge svg { width: 36px; height: 36px; stroke: #FFFFFF; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
@@ -125,13 +119,9 @@
 </head>
 <body>
 
-  <!-- 暗証番号ロック画面 -->
   <div id="lockScreen">
     <div class="lock-icon-badge">
-      <svg viewBox="0 0 24 24">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-      </svg>
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
     </div>
     <div class="lock-title">チェックリスト</div>
     <div class="lock-sub">4桁の暗証番号を入力してください</div>
@@ -146,14 +136,12 @@
         <span class="date-badge" id="todayLabel"></span>
         <button class="lock-btn" onclick="lockApp()" title="再ロック">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
         </button>
       </div>
     </header>
 
-    <!-- タブ切り替え -->
     <div class="tab-bar">
       <button class="tab-btn active" id="tabTasks" onclick="switchTab('tasks')">タスク</button>
       <button class="tab-btn" id="tabNotes" onclick="switchTab('notes')">デイリーメモ</button>
@@ -161,7 +149,6 @@
 
     <div id="loading" class="loading-wrap">データを読み込み中...</div>
 
-    <!-- タスクビュー -->
     <div id="tasksView">
       <div id="uncompletedList"></div>
       <div id="completedSection" style="display: none;">
@@ -173,7 +160,6 @@
       </div>
     </div>
 
-    <!-- デイリーメモビュー -->
     <div id="notesView" style="display: none;">
       <div class="daily-note-container">
         <div class="today-note-card">
@@ -216,13 +202,29 @@
           <input type="date" id="taskDateInput" class="input-text">
         </div>
         <div class="form-group">
+          <label class="form-label">時間（任意）</label>
+          <input type="time" id="taskTimeInput" class="input-text">
+        </div>
+      </div>
+
+      <div class="form-row" id="priorityRepeatRow">
+        <div class="form-group">
           <label class="form-label">優先度</label>
           <select id="taskPriorityInput" class="input-text">
-            <option value="1">1 (最優先)</option>
-            <option value="2">2 (高)</option>
-            <option value="3" selected>3 (標準)</option>
-            <option value="4">4 (低)</option>
-            <option value="5">5 (保留)</option>
+            <option value="1">1 (赤・最優先)</option>
+            <option value="2">2 (オレンジ・高)</option>
+            <option value="3" selected>3 (黄色・標準)</option>
+            <option value="4">4 (黄緑・低)</option>
+            <option value="5">5 (青・メモ)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">繰り返し</label>
+          <select id="taskRepeatInput" class="input-text">
+            <option value="">なし</option>
+            <option value="平日">平日（月〜金）</option>
+            <option value="毎週金曜">毎週金曜のみ</option>
+            <option value="毎日">毎日</option>
           </select>
         </div>
       </div>
@@ -310,7 +312,6 @@
     document.getElementById('todayNoteDateLabel').innerText = todayStr;
     document.getElementById('taskDateInput').value = todayStr;
 
-    // タブ切り替え
     function switchTab(tab) {
       currentTab = tab;
       if (tab === 'tasks') {
@@ -328,14 +329,19 @@
       }
     }
 
-    // タスク描画
     function renderTasks() {
       const uncompletedContainer = document.getElementById('uncompletedList');
       const completedContainer = document.getElementById('completedList');
       uncompletedContainer.innerHTML = '';
       completedContainer.innerHTML = '';
 
-      const parents = tasks.filter(t => !t.parentId);
+      // 時間順（昇順）にソートしてタイムライン化
+      const parents = tasks.filter(t => !t.parentId).sort((a, b) => {
+        const timeA = a.time || '99:99';
+        const timeB = b.time || '99:99';
+        return timeA.localeCompare(timeB);
+      });
+
       let completedCount = 0;
 
       parents.forEach(parent => {
@@ -369,6 +375,8 @@
       let p = String(task.priority || '3').trim();
       let pClass = `p-${p}`;
       let subBadgeHtml = subtasks.length > 0 ? `<span class="subtask-badge">ㄴ ${subDoneCount}/${subtasks.length}</span>` : '';
+      let repeatBadgeHtml = task.repeat ? `<span class="repeat-badge">🔄 ${escapeHtml(task.repeat)}</span>` : '';
+      let timeBadgeHtml = task.time ? `<span class="time-badge">🕒 ${escapeHtml(task.time)}</span>` : '';
       let memoPreviewHtml = task.memo ? `<div class="task-memo-preview">📝 ${escapeHtml(task.memo)}</div>` : '';
 
       card.innerHTML = `
@@ -381,6 +389,8 @@
             ${memoPreviewHtml}
             <div class="task-meta">
               <span>${task.date || ''}</span>
+              ${timeBadgeHtml}
+              ${repeatBadgeHtml}
               ${subBadgeHtml}
             </div>
           </div>
@@ -429,15 +439,17 @@
       });
     }
 
-    // モーダル管理（新規・編集・サブタスク）
     const modal = document.getElementById('taskModal');
     const taskIdInput = document.getElementById('taskIdInput');
     const parentIdInput = document.getElementById('taskParentId');
     const titleInput = document.getElementById('taskTitleInput');
     const dateInput = document.getElementById('taskDateInput');
+    const timeInput = document.getElementById('taskTimeInput');
     const priorityInput = document.getElementById('taskPriorityInput');
+    const repeatInput = document.getElementById('taskRepeatInput');
     const memoInput = document.getElementById('taskMemoInput');
     const addFields = document.getElementById('additionalFields');
+    const priorityRepeatRow = document.getElementById('priorityRepeatRow');
     const memoField = document.getElementById('memoField');
     const btnDelete = document.getElementById('btnDelete');
 
@@ -447,9 +459,12 @@
       parentIdInput.value = '';
       titleInput.value = '';
       dateInput.value = todayStr;
+      timeInput.value = '';
       priorityInput.value = '3';
+      repeatInput.value = '';
       memoInput.value = '';
       addFields.style.display = 'flex';
+      priorityRepeatRow.style.display = 'flex';
       memoField.style.display = 'block';
       btnDelete.style.display = 'none';
       modal.classList.add('active');
@@ -461,8 +476,11 @@
       taskIdInput.value = '';
       parentIdInput.value = parentId;
       titleInput.value = '';
+      timeInput.value = '';
+      repeatInput.value = '';
       memoInput.value = '';
       addFields.style.display = 'none';
+      priorityRepeatRow.style.display = 'none';
       memoField.style.display = 'none';
       btnDelete.style.display = 'none';
       modal.classList.add('active');
@@ -478,14 +496,18 @@
       parentIdInput.value = target.parentId || '';
       titleInput.value = target.title || '';
       dateInput.value = target.date || todayStr;
+      timeInput.value = target.time || '';
       priorityInput.value = target.priority || '3';
+      repeatInput.value = target.repeat || '';
       memoInput.value = target.memo || '';
 
       if (target.parentId) {
         addFields.style.display = 'none';
+        priorityRepeatRow.style.display = 'none';
         memoField.style.display = 'none';
       } else {
         addFields.style.display = 'flex';
+        priorityRepeatRow.style.display = 'flex';
         memoField.style.display = 'block';
       }
 
@@ -501,18 +523,21 @@
       const id = taskIdInput.value;
       const parentId = parentIdInput.value;
       const date = dateInput.value;
+      const time = timeInput.value;
       const priority = priorityInput.value;
+      const repeat = repeatInput.value;
       const memo = memoInput.value.trim();
 
       modal.classList.remove('active');
 
       if (id) {
-        // 編集
         const target = tasks.find(t => t.id === id);
         if (target) {
           target.title = title;
           target.date = date;
+          target.time = time;
           target.priority = priority;
+          target.repeat = repeat;
           target.memo = memo;
           renderTasks();
         }
@@ -520,14 +545,13 @@
         fetch(GAS_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({ action: 'updateTask', pin: currentPin, data: { id, title, date, priority, memo } })
+          body: JSON.stringify({ action: 'updateTask', pin: currentPin, data: { id, title, date, time, priority, repeat, memo } })
         });
       } else {
-        // 新規作成
         fetch(GAS_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({ action: 'addTask', pin: currentPin, data: { title, parentId, date, priority, memo } })
+          body: JSON.stringify({ action: 'addTask', pin: currentPin, data: { title, parentId, date, time, priority, repeat, memo } })
         })
         .then(res => res.json())
         .then(res => {
@@ -558,7 +582,6 @@
       });
     };
 
-    // デイリーメモ関連
     function renderDailyNotes() {
       const todayNote = dailyNotes.find(n => n.date === todayStr);
       document.getElementById('todayNoteInput').value = todayNote ? todayNote.content : '';
