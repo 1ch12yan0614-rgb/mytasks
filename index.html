@@ -176,10 +176,16 @@
     .sheet-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
     .form-group { margin-bottom: 10px; }
     .form-label { display: block; font-size: 11.5px; font-weight: 600; color: var(--text-sub); margin-bottom: 3px; }
-    .input-text, .input-textarea { width: 100%; padding: 10px 12px; font-size: 14.5px; border-radius: 10px; border: 1px solid var(--border); background: #F9FAFB; outline: none; font-family: inherit; }
+    .input-text, .input-textarea { width: 100%; padding: 10px 12px; font-size: 14px; border-radius: 10px; border: 1px solid var(--border); background: #F9FAFB; outline: none; font-family: inherit; }
     .input-textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
     .form-row { display: flex; gap: 8px; }
     .form-row .form-group { flex: 1; }
+    
+    /* 時間ピッカーのセレクトスタイル */
+    .time-picker-wrap { display: flex; gap: 4px; align-items: center; }
+    .time-picker-wrap select { flex: 1; padding: 10px 6px; font-size: 13.5px; text-align: center; }
+    .time-colon { font-weight: 700; color: var(--text-sub); font-size: 14px; }
+
     .sheet-actions { display: flex; gap: 8px; margin-top: 14px; }
     .btn { flex: 1; padding: 11px; font-size: 14.5px; font-weight: 600; border-radius: 10px; border: none; cursor: pointer; }
     .btn-cancel { background: #F2F4F7; color: #475467; }
@@ -275,7 +281,27 @@
         </div>
         <div class="form-group">
           <label class="form-label">時間（任意）</label>
-          <input type="time" id="taskTimeInput" class="input-text">
+          <div class="time-picker-wrap">
+            <select id="taskTimeHour" class="input-text">
+              <option value="">--時</option>
+              <option value="00">00</option><option value="01">01</option><option value="02">02</option>
+              <option value="03">03</option><option value="04">04</option><option value="05">05</option>
+              <option value="06">06</option><option value="07">07</option><option value="08">08</option>
+              <option value="09">09</option><option value="10">10</option><option value="11">11</option>
+              <option value="12">12</option><option value="13">13</option><option value="14">14</option>
+              <option value="15">15</option><option value="16">16</option><option value="17">17</option>
+              <option value="18">18</option><option value="19">19</option><option value="20">20</option>
+              <option value="21">21</option><option value="22">22</option><option value="23">23</option>
+            </select>
+            <span class="time-colon">:</span>
+            <select id="taskTimeMinute" class="input-text">
+              <option value="">--分</option>
+              <option value="00">00</option><option value="05">05</option><option value="10">10</option>
+              <option value="15">15</option><option value="20">20</option><option value="25">25</option>
+              <option value="30">30</option><option value="35">35</option><option value="40">40</option>
+              <option value="45">45</option><option value="50">50</option><option value="55">55</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -605,7 +631,8 @@
     const parentIdInput = document.getElementById('taskParentId');
     const titleInput = document.getElementById('taskTitleInput');
     const dateInput = document.getElementById('taskDateInput');
-    const timeInput = document.getElementById('taskTimeInput');
+    const hourSelect = document.getElementById('taskTimeHour');
+    const minuteSelect = document.getElementById('taskTimeMinute');
     const priorityInput = document.getElementById('taskPriorityInput');
     const repeatInput = document.getElementById('taskRepeatInput');
     const memoInput = document.getElementById('taskMemoInput');
@@ -635,7 +662,8 @@
       parentIdInput.value = '';
       titleInput.value = '';
       dateInput.value = todayStr;
-      timeInput.value = '';
+      hourSelect.value = '';
+      minuteSelect.value = '';
       priorityInput.value = '3';
       repeatInput.value = '';
       memoInput.value = '';
@@ -652,7 +680,8 @@
       taskIdInput.value = '';
       parentIdInput.value = parentId;
       titleInput.value = '';
-      timeInput.value = '';
+      hourSelect.value = '';
+      minuteSelect.value = '';
       repeatInput.value = '';
       memoInput.value = '';
       addFields.style.display = 'none';
@@ -672,7 +701,17 @@
       parentIdInput.value = target.parentId || '';
       titleInput.value = target.title || '';
       dateInput.value = target.date || todayStr;
-      timeInput.value = target.time || '';
+
+      // 時間の復元（例: "10:30" を分解）
+      if (target.time && target.time.includes(':')) {
+        const parts = target.time.split(':');
+        hourSelect.value = parts[0].padStart(2, '0');
+        minuteSelect.value = parts[1].padStart(2, '0');
+      } else {
+        hourSelect.value = '';
+        minuteSelect.value = '';
+      }
+
       priorityInput.value = target.priority || '3';
       repeatInput.value = target.repeat || '';
       memoInput.value = target.memo || '';
@@ -699,7 +738,12 @@
       const id = taskIdInput.value;
       const parentId = parentIdInput.value;
       const date = dateInput.value;
-      const time = timeInput.value;
+      
+      // 時間の合成（時が選ばれていれば分と連結、未選択なら空文字）
+      const h = hourSelect.value;
+      const m = minuteSelect.value;
+      const time = h ? `${h}:${m || '00'}` : '';
+
       const priority = priorityInput.value;
       const repeat = repeatInput.value;
       const memo = memoInput.value.trim();
