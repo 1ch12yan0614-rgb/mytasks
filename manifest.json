@@ -1,6 +1,6 @@
 {
-  "name": "TickTask",
-  "short_name": "TickTask",
+  "name": "チェックリスト",
+  "short_name": "チェックリスト",
   "id": "/mytasks/",
   "start_url": "./index.html",
   "scope": "./",
