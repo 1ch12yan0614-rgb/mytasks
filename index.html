@@ -76,17 +76,45 @@
     }
 
     .task-card.is-done .task-title { color: var(--text-sub); text-decoration: line-through; }
-    .task-memo-preview { font-size: 11px; color: var(--text-sub); margin-top: 1px; display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .task-meta { display: flex; align-items: center; gap: 5px; margin-top: 2px; font-size: 11px; color: var(--text-sub); flex-wrap: wrap; }
+    
+    .task-memo-preview { 
+      font-size: 11.5px; 
+      color: var(--text-sub); 
+      margin-top: 2px; 
+      display: flex; 
+      align-items: center; 
+      gap: 4px; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+    }
+    .task-memo-preview svg {
+      width: 12px;
+      height: 12px;
+      stroke: var(--text-sub);
+      flex-shrink: 0;
+    }
+    .task-meta { display: flex; align-items: center; gap: 5px; margin-top: 3px; font-size: 11px; color: var(--text-sub); flex-wrap: wrap; }
     
     .date-tag { font-weight: 700; padding: 1px 6px; border-radius: 6px; font-size: 10.5px; display: inline-flex; align-items: center; }
     .tag-today { background: #DCFCE7; color: #15803D; }
     .tag-tomorrow { background: #E0E7FF; color: #3730A3; }
     .tag-overdue { background: #FEE2E2; color: #DC2626; }
 
-    .subtask-badge { background: var(--primary-light); color: var(--primary); padding: 1px 6px; border-radius: 6px; font-weight: 600; font-size: 10px; }
-    .repeat-badge { background: #F3E8FF; color: #7E22CE; padding: 1px 6px; border-radius: 6px; font-weight: 600; font-size: 10px; }
-    .time-badge { background: #FEF3C7; color: #B45309; padding: 1px 6px; border-radius: 6px; font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 2px; }
+    .subtask-badge { background: var(--primary-light); color: var(--primary); padding: 1px 6px; border-radius: 6px; font-weight: 600; font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
+    .repeat-badge { background: #F3E8FF; color: #7E22CE; padding: 1px 6px; border-radius: 6px; font-weight: 600; font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
+    .time-badge { background: #FEF3C7; color: #B45309; padding: 1px 6px; border-radius: 6px; font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
+
+    .meta-badge-icon {
+      width: 10.5px;
+      height: 10.5px;
+      stroke-width: 2.2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
 
     .card-actions { display: flex; align-items: center; gap: 4px; }
     .edit-icon-btn { background: none; border: none; padding: 4px; cursor: pointer; color: #9CA3AF; display: flex; align-items: center; justify-content: center; }
@@ -459,10 +487,39 @@
       
       let p = String(task.priority || '3').trim();
       let pClass = `p-${p}`;
-      let subBadgeHtml = subtasks.length > 0 ? `<span class="subtask-badge">ㄴ ${subDoneCount}/${subtasks.length}</span>` : '';
-      let repeatBadgeHtml = task.repeat ? `<span class="repeat-badge">🔄 ${escapeHtml(task.repeat)}</span>` : '';
-      let timeBadgeHtml = task.time ? `<span class="time-badge">🕒 ${escapeHtml(task.time)}</span>` : '';
-      let memoPreviewHtml = task.memo ? `<div class="task-memo-preview">📝 ${escapeHtml(task.memo)}</div>` : '';
+
+      // サブタスクアイコン (階層ブランチ矢印)
+      let subBadgeHtml = subtasks.length > 0 
+        ? `<span class="subtask-badge">
+             <svg class="meta-badge-icon" viewBox="0 0 24 24"><polyline points="15 10 20 15 15 20"></polyline><path d="M4 4v7a4 4 0 0 0 4 4h12"></path></svg>
+             ${subDoneCount}/${subtasks.length}
+           </span>` 
+        : '';
+
+      // 繰り返しアイコン (ループ矢印)
+      let repeatBadgeHtml = task.repeat 
+        ? `<span class="repeat-badge">
+             <svg class="meta-badge-icon" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+             ${escapeHtml(task.repeat)}
+           </span>` 
+        : '';
+
+      // 時間アイコン (時計)
+      let timeBadgeHtml = task.time 
+        ? `<span class="time-badge">
+             <svg class="meta-badge-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+             ${escapeHtml(task.time)}
+           </span>` 
+        : '';
+
+      // メモアイコン (ノートテキスト)
+      let memoPreviewHtml = task.memo 
+        ? `<div class="task-memo-preview">
+             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+             <span>${escapeHtml(task.memo)}</span>
+           </div>` 
+        : '';
+
       const displayDateHtml = formatDisplayDate(task.date);
 
       card.innerHTML = `
@@ -558,7 +615,6 @@
       }
     });
 
-    // ★Enter/Goキーで即保存（日本語変換確定Enterでの誤作動を安全にガード）
     function initKeyboardSubmit() {
       titleInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.isComposing) {
@@ -628,7 +684,6 @@
 
       btnDelete.style.display = 'block';
       modal.classList.add('active');
-      // 編集時は自動でキーボードが開かないように維持
     }
 
     document.getElementById('btnCancel').onclick = () => modal.classList.remove('active');
