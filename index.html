@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-content">
   <title>To-Do List</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#F4F6F9">
@@ -113,10 +113,34 @@
     .fab { position: fixed; bottom: 20px; right: 20px; width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #3E63DD, #2E4EC2); box-shadow: 0 6px 20px rgba(62,99,221,0.35); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 100; }
     .fab svg { width: 26px; height: 26px; stroke: #fff; stroke-width: 2.5; }
 
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
+    /* ★モーダルを中央配置に変更（キーボードと被らないようにする） */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(2px);
+      z-index: 200;
+      display: none;
+      align-items: center; /* 中央揃え */
+      justify-content: center;
+      padding: 16px;
+    }
     .modal-overlay.active { display: flex; }
-    .modal-sheet { width: 100%; max-width: 500px; background: #FFFFFF; border-radius: 20px 20px 0 0; padding: 20px 18px 24px 18px; animation: slideUp 0.25s ease-out; max-height: 90vh; overflow-y: auto; }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-sheet {
+      width: 100%;
+      max-width: 440px;
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 20px 18px 22px 18px;
+      animation: popIn 0.2s ease-out;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.2);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
     .sheet-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
     .form-group { margin-bottom: 10px; }
     .form-label { display: block; font-size: 11.5px; font-weight: 600; color: var(--text-sub); margin-bottom: 3px; }
@@ -135,8 +159,6 @@
     .today-note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .today-note-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
     .note-status { font-size: 11.5px; color: var(--text-sub); font-weight: 500; transition: all 0.2s; }
-    
-    /* ★デイリーメモ入力欄の拡大（min-height: 260px） */
     .daily-textarea { width: 100%; min-height: 260px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: #FAFAFA; font-size: 14px; line-height: 1.65; outline: none; resize: vertical; font-family: inherit; }
     .daily-textarea:focus { border-color: var(--primary); background: #FFF; }
     
@@ -155,7 +177,6 @@
   <div id="app">
     <div class="sticky-header">
       <header>
-        <!-- ★タイトルを To-Do List に変更 -->
         <h1>To-Do List</h1>
         <div class="header-right">
           <span class="date-badge" id="todayLabel"></span>
@@ -275,7 +296,6 @@
     let sortableInstance = null;
     let noteSaveTimeout = null;
 
-    // 日本時間(JST)基準でローカル日付文字列(YYYY-MM-DD)を生成
     function getLocalDateString(d = new Date()) {
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -290,6 +310,7 @@
       loadAllData();
       initSortable();
       initAutoSaveNote();
+      initKeyboardSubmit(); // ★Enter/Goキーでの保存リスナー
     };
 
     function loadAllData() {
@@ -339,7 +360,6 @@
       }
     }
 
-    // 0.5秒長押しドラッグ並び替え
     function initSortable() {
       const container = document.getElementById('uncompletedList');
       sortableInstance = new Sortable(container, {
@@ -526,6 +546,16 @@
       }
     });
 
+    // ★Enter/Goキーで即保存するリスナー
+    function initKeyboardSubmit() {
+      titleInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('btnSave').click();
+        }
+      });
+    }
+
     document.getElementById('fabAdd').onclick = function() {
       document.getElementById('modalTitle').innerText = '新しいタスク';
       taskIdInput.value = '';
@@ -541,7 +571,7 @@
       memoField.style.display = 'block';
       btnDelete.style.display = 'none';
       modal.classList.add('active');
-      titleInput.focus();
+      setTimeout(() => titleInput.focus(), 50);
     };
 
     function openAddSubtaskModal(parentId) {
@@ -557,7 +587,7 @@
       memoField.style.display = 'none';
       btnDelete.style.display = 'none';
       modal.classList.add('active');
-      titleInput.focus();
+      setTimeout(() => titleInput.focus(), 50);
     }
 
     function openEditTaskModal(id) {
@@ -586,6 +616,7 @@
 
       btnDelete.style.display = 'block';
       modal.classList.add('active');
+      setTimeout(() => titleInput.focus(), 50);
     }
 
     document.getElementById('btnCancel').onclick = () => modal.classList.remove('active');
@@ -667,7 +698,7 @@
     };
 
     // ==========================================
-    // デイリーメモ自動保存リスナー
+    // デイリーメモ自動保存
     // ==========================================
 
     function initAutoSaveNote() {
@@ -733,7 +764,6 @@
       const pastListContainer = document.getElementById('pastNotesList');
       pastListContainer.innerHTML = '';
 
-      // 文字が入っている日のみ過去ログに抽出
       const pastNotes = dailyNotes
         .filter(n => n.date !== todayStr && n.content && n.content.trim() !== '')
         .sort((a, b) => b.date.localeCompare(a.date));
