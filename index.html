@@ -12,6 +12,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- スマホ用ドラッグ＆ドロップライブラリ -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <style>
     :root {
       --bg-color: #F4F6F9;
@@ -36,10 +38,17 @@
     .tab-btn.active { background: #FFFFFF; color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 
     .section-title { font-size: 13px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 4px 10px 4px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-    .task-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(0,0,0,0.03); margin-bottom: 12px; overflow: hidden; }
-    .task-main { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
-    .check-btn { width: 38px; height: 38px; min-width: 38px; border-radius: 50%; border: 2px solid #D0D5DD; background: #FAFAFA; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
-    .check-btn svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
+    .task-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(0,0,0,0.03); margin-bottom: 12px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+    .task-main { padding: 14px 14px; display: flex; align-items: center; gap: 10px; }
+    
+    /* ドラッグ移動用のつまみスタイル */
+    .drag-handle { color: #CBD5E1; cursor: grab; padding: 4px 2px; display: flex; align-items: center; justify-content: center; touch-action: none; }
+    .drag-handle:active { cursor: grabbing; color: var(--primary); }
+    .sortable-ghost { opacity: 0.3; background: #E2E8F0; }
+    .sortable-chosen { box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+
+    .check-btn { width: 36px; height: 36px; min-width: 36px; border-radius: 50%; border: 2px solid #D0D5DD; background: #FAFAFA; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+    .check-btn svg { width: 15px; height: 15px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
     .check-btn.checked { background-color: #22C55E; border-color: #22C55E; }
     .check-btn.checked svg { opacity: 1; transform: scale(1); }
     .task-content { flex: 1; min-width: 0; cursor: pointer; }
@@ -230,12 +239,14 @@
     let dailyNotes = [];
     let showCompleted = false;
     let currentTab = 'tasks';
+    let sortableInstance = null;
 
     const todayObj = new Date();
     const todayStr = todayObj.toISOString().split('T')[0];
 
     window.onload = function() {
       loadAllData();
+      initSortable();
     };
 
     function loadAllData() {
@@ -256,6 +267,38 @@
           document.getElementById('loading').innerText = '通信エラーが発生しました';
           console.error(err);
         });
+    }
+
+    // ★ドラッグ＆ドロップ（Sortable）の初期化
+    function initSortable() {
+      const container = document.getElementById('uncompletedList');
+      sortableInstance = new Sortable(container, {
+        handle: '.drag-handle', // つまみアイコンでのみドラッグ可能
+        animation: 180,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        onEnd: function () {
+          // ドラッグ終了後、新しいDOM順序からタスクID順を取得
+          const cardElements = container.querySelectorAll('.task-card');
+          const newOrderIds = Array.from(cardElements).map(el => el.getAttribute('data-id'));
+
+          // 配列内の順序を更新
+          const orderedParents = [];
+          newOrderIds.forEach(id => {
+            const t = tasks.find(item => item.id === id);
+            if (t) orderedParents.push(t);
+          });
+          const otherTasks = tasks.filter(t => t.parentId || t.completed);
+          tasks = [...orderedParents, ...otherTasks];
+
+          // スプレッドシートへ新しい並び順を非同期保存
+          fetch(GAS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'updateTaskOrder', order: newOrderIds })
+          }).catch(err => console.error('順序保存エラー:', err));
+        }
+      });
     }
 
     document.getElementById('todayLabel').innerText = todayObj.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', weekday: 'short' });
@@ -285,12 +328,8 @@
       uncompletedContainer.innerHTML = '';
       completedContainer.innerHTML = '';
 
-      const parents = tasks.filter(t => !t.parentId).sort((a, b) => {
-        const timeA = a.time || '99:99';
-        const timeB = b.time || '99:99';
-        return timeA.localeCompare(timeB);
-      });
-
+      // ユーザーの手動並び替え（配列順）をそのまま優先描画
+      const parents = tasks.filter(t => !t.parentId);
       let completedCount = 0;
 
       parents.forEach(parent => {
@@ -320,6 +359,7 @@
     function createCardElement(task, subtasks, subDoneCount) {
       const card = document.createElement('div');
       card.className = `task-card ${task.completed ? 'is-done' : ''}`;
+      card.setAttribute('data-id', task.id);
       
       let p = String(task.priority || '3').trim();
       let pClass = `p-${p}`;
@@ -328,8 +368,20 @@
       let timeBadgeHtml = task.time ? `<span class="time-badge">🕒 ${escapeHtml(task.time)}</span>` : '';
       let memoPreviewHtml = task.memo ? `<div class="task-memo-preview">📝 ${escapeHtml(task.memo)}</div>` : '';
 
+      // 未完了の親タスクのみドラッグ用のつまみ（⠿）を表示
+      const dragHandleHtml = !task.completed ? `
+        <div class="drag-handle" title="ドラッグして並び替え">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+            <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+            <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+          </svg>
+        </div>
+      ` : '';
+
       card.innerHTML = `
         <div class="task-main">
+          ${dragHandleHtml}
           <div class="check-btn ${task.completed ? 'checked' : ''}" onclick="toggleTask('${task.id}')">
             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </div>
@@ -466,7 +518,6 @@
 
     document.getElementById('btnCancel').onclick = () => modal.classList.remove('active');
 
-    // ★タスク保存の超高速化（楽観的UI更新：押した瞬間に0秒で画面反映）
     document.getElementById('btnSave').onclick = function() {
       const title = titleInput.value.trim();
       if (!title) return;
@@ -481,7 +532,6 @@
       modal.classList.remove('active');
 
       if (id) {
-        // 既存タスク編集
         const target = tasks.find(t => t.id === id);
         if (target) {
           target.title = title;
@@ -499,7 +549,6 @@
           body: JSON.stringify({ action: 'updateTask', data: { id, title, date, time, priority, repeat, memo } })
         });
       } else {
-        // 新規タスク追加: IDを即時採番して画面に即座に追加（待ち時間ゼロ）
         const newId = 'task_' + Date.now();
         const newTask = {
           id: newId,
@@ -522,14 +571,11 @@
           if (sub) sub.classList.add('expanded');
         }
 
-        // バックグラウンドで非同期保存
         fetch(GAS_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({ action: 'addTask', data: newTask })
-        }).catch(err => {
-          console.error('保存エラー:', err);
-        });
+        }).catch(err => console.error('保存エラー:', err));
       }
     };
 
@@ -548,7 +594,6 @@
       });
     };
 
-    // ★過去メモの折りたたみ表示ロジック
     function renderDailyNotes() {
       const todayNote = dailyNotes.find(n => n.date === todayStr);
       document.getElementById('todayNoteInput').value = todayNote ? todayNote.content : '';
