@@ -558,9 +558,10 @@
       }
     });
 
+    // ★Enter/Goキーで即保存（日本語変換確定Enterでの誤作動を安全にガード）
     function initKeyboardSubmit() {
       titleInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.isComposing) {
           e.preventDefault();
           document.getElementById('btnSave').click();
         }
@@ -627,7 +628,7 @@
 
       btnDelete.style.display = 'block';
       modal.classList.add('active');
-      // ★自動フォーカス（キーボード起動）を解除
+      // 編集時は自動でキーボードが開かないように維持
     }
 
     document.getElementById('btnCancel').onclick = () => modal.classList.remove('active');
