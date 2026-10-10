@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>TickTask</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#3E63DD">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/906/906334.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #F4F6F9;
+      --card-bg: #FFFFFF;
+      --text-main: #1C1E21;
+      --text-sub: #8A92A6;
+      --primary: #3E63DD;
+      --primary-light: #EEF2FF;
+      --border: #E6E8EC;
+      --p-high: #E5484D;
+      --p-mid: #F76B15;
+      --p-low: #3E63DD;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+    body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif; min-height: 100vh; display: flex; justify-content: center; padding-bottom: 90px; }
+    #app { width: 100%; max-width: 480px; padding: 20px 16px; }
+    header { margin-bottom: 20px; padding: 0 4px; display: flex; justify-content: space-between; align-items: baseline; }
+    h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+    .date-badge { font-size: 13px; color: var(--text-sub); font-weight: 500; }
+    .section-title { font-size: 13px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 4px 10px 4px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+    .task-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(0,0,0,0.03); margin-bottom: 12px; overflow: hidden; }
+    .task-main { padding: 14px 16px; display: flex; align-items: center; gap: 14px; }
+    .check-btn { width: 42px; height: 42px; min-width: 42px; border-radius: 50%; border: 2px solid #D0D5DD; background: #FAFAFA; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .check-btn svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
+    .check-btn.checked { background-color: #22C55E; border-color: #22C55E; }
+    .check-btn.checked svg { opacity: 1; transform: scale(1); }
+    .task-content { flex: 1; min-width: 0; cursor: pointer; }
+    .task-title { font-size: 15px; font-weight: 600; color: var(--text-main); word-break: break-word; }
+    .task-card.is-done .task-title { color: var(--text-sub); text-decoration: line-through; }
+    .task-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; font-size: 12px; color: var(--text-sub); }
+    .subtask-badge { background: var(--primary-light); color: var(--primary); padding: 2px 7px; border-radius: 8px; font-weight: 600; font-size: 11px; }
+    .priority-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; }
+    .p-high { background: #FEE2E2; color: var(--p-high); }
+    .p-mid { background: #FFEDD5; color: var(--p-mid); }
+    .p-low { background: #DBEAFE; color: var(--p-low); }
+    .subtasks-container { background-color: #FAFBFD; border-top: 1px solid #F0F2F5; padding: 10px 16px 14px 16px; display: none; }
+    .subtasks-container.expanded { display: block; }
+    .subtask-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+    .subtask-btn { width: 26px; height: 26px; min-width: 26px; border-radius: 50%; border: 2px solid #D0D5DD; background: #FFF; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .subtask-btn svg { width: 12px; height: 12px; stroke: #fff; stroke-width: 3; stroke-linecap: round; opacity: 0; }
+    .subtask-btn.checked { background-color: #22C55E; border-color: #22C55E; }
+    .subtask-btn.checked svg { opacity: 1; }
+    .subtask-title { font-size: 13.5px; color: var(--text-main); flex: 1; }
+    .subtask-item.is-done .subtask-title { color: var(--text-sub); text-decoration: line-through; }
+    .add-subtask-btn { margin-top: 8px; font-size: 12px; color: var(--primary); font-weight: 600; background: transparent; border: none; cursor: pointer; }
+    .fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #3E63DD, #2E4EC2); box-shadow: 0 8px 24px rgba(62,99,221,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 100; }
+    .fab svg { width: 28px; height: 28px; stroke: #fff; stroke-width: 2.5; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-sheet { width: 100%; max-width: 500px; background: #FFFFFF; border-radius: 24px 24px 0 0; padding: 24px 20px 32px 20px; animation: slideUp 0.25s ease-out; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .sheet-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .form-group { margin-bottom: 14px; }
+    .input-text { width: 100%; padding: 12px 14px; font-size: 15px; border-radius: 12px; border: 1px solid var(--border); background: #F9FAFB; outline: none; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+    .sheet-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .btn { flex: 1; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 12px; border: none; cursor: pointer; }
+    .btn-cancel { background: #F2F4F7; color: #475467; }
+    .btn-submit { background: var(--primary); color: #FFF; }
+    .loading-wrap { text-align: center; padding: 40px 0; color: var(--text-sub); }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Today's Tasks</h1>
+      <span class="date-badge" id="todayLabel"></span>
+    </header>
+    <div id="loading" class="loading-wrap">データを読み込み中...</div>
+    <div id="uncompletedList"></div>
+    <div id="completedSection" style="display: none;">
+      <div class="section-title" id="completedToggle">
+        <span>完了済み (<span id="completedCount">0</span>)</span>
+        <span id="completedIcon">▼</span>
+      </div>
+      <div id="completedList"></div>
+    </div>
+  </div>
+
+  <button class="fab" id="fabAdd">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+  </button>
+
+  <div class="modal-overlay" id="taskModal">
+    <div class="modal-sheet">
+      <div class="sheet-title" id="modalTitle">新しいタスク</div>
+      <input type="hidden" id="taskParentId">
+      <div class="form-group">
+        <input type="text" id="taskTitleInput" class="input-text" placeholder="何をしますか？">
+      </div>
+      <div class="form-row" id="additionalFields">
+        <div class="form-group"><input type="date" id="taskDateInput" class="input-text"></div>
+        <div class="form-group">
+          <select id="taskPriorityInput" class="input-text">
+            <option value="高">優先度: 高</option>
+            <option value="中" selected>優先度: 中</option>
+            <option value="低">優先度: 低</option>
+          </select>
+        </div>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn btn-cancel" id="btnCancel">キャンセル</button>
+        <button class="btn btn-submit" id="btnSave">追加</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ★★★ ステップ1でコピーしたGASのURLをここに貼り付けてください ★★★
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzQcM-lRySGUYsmMucwlgFSahz_-4tkoEvZ2SMncyJa7FgJQlG7L7AoKSKoM1gJSSCI/exec";
+
+    // Service Worker登録（アプリ化対応）
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+
+    let tasks = [];
+    let showCompleted = false;
+
+    const today = new Date();
+    document.getElementById('todayLabel').innerText = today.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', weekday: 'short' });
+    document.getElementById('taskDateInput').value = today.toISOString().split('T')[0];
+
+    // 初回データ取得
+    window.onload = function() {
+      fetch(`${GAS_API_URL}?action=getTasks`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            tasks = res.data;
+            document.getElementById('loading').style.display = 'none';
+            renderTasks();
+          } else {
+            alert('読み込み失敗: ' + res.message);
+          }
+        })
+        .catch(err => alert('通信エラー: ' + err));
+    };
+
+    function renderTasks() {
+      const uncompletedContainer = document.getElementById('uncompletedList');
+      const completedContainer = document.getElementById('completedList');
+      uncompletedContainer.innerHTML = '';
+      completedContainer.innerHTML = '';
+
+      const parents = tasks.filter(t => !t.parentId);
+      let completedCount = 0;
+
+      parents.forEach(parent => {
+        const subtasks = tasks.filter(t => t.parentId === parent.id);
+        const subDoneCount = subtasks.filter(t => t.completed).length;
+        const card = createCardElement(parent, subtasks, subDoneCount);
+
+        if (parent.completed) {
+          completedCount++;
+          completedContainer.appendChild(card);
+        } else {
+          uncompletedContainer.appendChild(card);
+        }
+      });
+
+      const completedSection = document.getElementById('completedSection');
+      if (completedCount > 0) {
+        completedSection.style.display = 'block';
+        document.getElementById('completedCount').innerText = completedCount;
+        completedContainer.style.display = showCompleted ? 'block' : 'none';
+        document.getElementById('completedIcon').innerText = showCompleted ? '▲' : '▼';
+      } else {
+        completedSection.style.display = 'none';
+      }
+    }
+
+    function createCardElement(task, subtasks, subDoneCount) {
+      const card = document.createElement('div');
+      card.className = `task-card ${task.completed ? 'is-done' : ''}`;
+      let pClass = task.priority === '高' ? 'p-high' : (task.priority === '低' ? 'p-low' : 'p-mid');
+      let subBadgeHtml = subtasks.length > 0 ? `<span class="subtask-badge">ㄴ ${subDoneCount}/${subtasks.length}</span>` : '';
+
+      card.innerHTML = `
+        <div class="task-main">
+          <div class="check-btn ${task.completed ? 'checked' : ''}" onclick="toggleTask('${task.id}')">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="task-content" onclick="toggleSubtasks('${task.id}')">
+            <div class="task-title">${escapeHtml(task.title)}</div>
+            <div class="task-meta">
+              <span class="meta-item">${task.date || ''}</span>
+              ${subBadgeHtml}
+            </div>
+          </div>
+          <div class="priority-badge ${pClass}">${task.priority}</div>
+        </div>
+        <div class="subtasks-container" id="sub-${task.id}">
+          <div>
+            ${subtasks.map(sub => `
+              <div class="subtask-item ${sub.completed ? 'is-done' : ''}">
+                <div class="subtask-btn ${sub.completed ? 'checked' : ''}" onclick="toggleTask('${sub.id}')">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <span class="subtask-title">${escapeHtml(sub.title)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <button class="add-subtask-btn" onclick="openAddSubtaskModal('${task.id}')">＋ サブタスクを追加</button>
+        </div>
+      `;
+      return card;
+    }
+
+    function toggleSubtasks(parentId) {
+      const subContainer = document.getElementById(`sub-${parentId}`);
+      if (subContainer) subContainer.classList.toggle('expanded');
+    }
+
+    function toggleTask(id) {
+      const target = tasks.find(t => t.id === id);
+      if (!target) return;
+      target.completed = !target.completed;
+      renderTasks();
+
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'updateTaskStatus', taskId: id, completed: target.completed })
+      }).catch(() => {
+        target.completed = !target.completed;
+        renderTasks();
+      });
+    }
+
+    const modal = document.getElementById('taskModal');
+    const titleInput = document.getElementById('taskTitleInput');
+    const parentIdInput = document.getElementById('taskParentId');
+    const addFields = document.getElementById('additionalFields');
+
+    document.getElementById('fabAdd').onclick = function() {
+      document.getElementById('modalTitle').innerText = '新しいタスク';
+      parentIdInput.value = '';
+      titleInput.value = '';
+      addFields.style.display = 'flex';
+      modal.classList.add('active');
+      titleInput.focus();
+    };
+
+    function openAddSubtaskModal(parentId) {
+      document.getElementById('modalTitle').innerText = 'サブタスクを追加';
+      parentIdInput.value = parentId;
+      titleInput.value = '';
+      addFields.style.display = 'none';
+      modal.classList.add('active');
+      titleInput.focus();
+    }
+
+    document.getElementById('btnCancel').onclick = () => modal.classList.remove('active');
+
+    document.getElementById('btnSave').onclick = function() {
+      const title = titleInput.value.trim();
+      if (!title) return;
+      const parentId = parentIdInput.value;
+      const date = document.getElementById('taskDateInput').value;
+      const priority = document.getElementById('taskPriorityInput').value;
+
+      modal.classList.remove('active');
+
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'addTask', data: { title, parentId, date, priority } })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'success') {
+          tasks.push(res.data);
+          renderTasks();
+          if (parentId) {
+            const sub = document.getElementById(`sub-${parentId}`);
+            if (sub) sub.classList.add('expanded');
+          }
+        }
+      });
+    };
+
+    document.getElementById('completedToggle').onclick = () => {
+      showCompleted = !showCompleted;
+      renderTasks();
+    };
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
