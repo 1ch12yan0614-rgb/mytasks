@@ -40,6 +40,7 @@
     h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
     .header-right { display: flex; align-items: center; gap: 8px; }
     .date-badge { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+    .sync-badge { font-size: 11px; color: var(--primary); font-weight: 600; background: var(--primary-light); padding: 1px 6px; border-radius: 6px; display: none; }
 
     .tab-bar { display: flex; background: #EAECEF; border-radius: 10px; padding: 2px; margin-bottom: 8px; }
     .tab-btn { flex: 1; padding: 6px 0; font-size: 13px; font-weight: 600; text-align: center; border: none; background: transparent; border-radius: 8px; cursor: pointer; color: var(--text-sub); transition: all 0.2s; }
@@ -181,7 +182,6 @@
     .form-row { display: flex; gap: 8px; }
     .form-row .form-group { flex: 1; }
     
-    /* 時間ピッカーのセレクトスタイル */
     .time-picker-wrap { display: flex; gap: 4px; align-items: center; }
     .time-picker-wrap select { flex: 1; padding: 10px 6px; font-size: 13.5px; text-align: center; }
     .time-colon { font-weight: 700; color: var(--text-sub); font-size: 14px; }
@@ -217,6 +217,7 @@
       <header>
         <h1>To-Do List</h1>
         <div class="header-right">
+          <span class="sync-badge" id="syncBadge">同期中…</span>
           <span class="date-badge" id="todayLabel"></span>
         </div>
       </header>
@@ -342,6 +343,8 @@
 
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzQcM-lRySGUYsmMucwlgFSahz_-4tkoEvZ2SMncyJa7FgJQlG7L7AoKSKoM1gJSSCI/exec";
+    const CACHE_TASKS_KEY = 'todo_tasks_cache_v1';
+    const CACHE_NOTES_KEY = 'todo_notes_cache_v1';
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js');
@@ -366,28 +369,67 @@
     const todayStr = getLocalDateString(todayObj);
 
     window.onload = function() {
-      loadAllData();
+      initCachedData(); // 【超高速化】開いた瞬間にキャッシュを即時描画
+      loadAllData();     // 裏で最新データを取得＆静かに同期
       initSortable();
       initAutoSaveNote();
       initKeyboardSubmit();
     };
 
+    function saveLocalCache() {
+      try {
+        localStorage.setItem(CACHE_TASKS_KEY, JSON.stringify(tasks));
+        localStorage.setItem(CACHE_NOTES_KEY, JSON.stringify(dailyNotes));
+      } catch (e) {}
+    }
+
+    // 起動0.05秒で表示する処理
+    function initCachedData() {
+      try {
+        const cachedTasks = localStorage.getItem(CACHE_TASKS_KEY);
+        const cachedNotes = localStorage.getItem(CACHE_NOTES_KEY);
+        if (cachedTasks) {
+          tasks = JSON.parse(cachedTasks);
+          renderTasks();
+          document.getElementById('loading').style.display = 'none';
+        }
+        if (cachedNotes) {
+          dailyNotes = JSON.parse(cachedNotes);
+          renderDailyNotes();
+        }
+      } catch (e) {
+        console.warn('キャッシュ復元エラー:', e);
+      }
+    }
+
     function loadAllData() {
+      const syncBadge = document.getElementById('syncBadge');
+      if (tasks.length > 0) {
+        syncBadge.style.display = 'inline-block'; // キャッシュ表示中は控えめに「同期中…」
+      }
+
       fetch(`${GAS_API_URL}?action=getAllData`)
         .then(res => res.json())
         .then(res => {
+          syncBadge.style.display = 'none';
+          document.getElementById('loading').style.display = 'none';
           if (res.status === 'success') {
-            document.getElementById('loading').style.display = 'none';
             tasks = res.tasks || [];
             dailyNotes = res.dailyNotes || [];
+            saveLocalCache(); // ローカルキャッシュを最新化
             renderTasks();
             renderDailyNotes();
-          } else {
+          } else if (tasks.length === 0) {
             document.getElementById('loading').innerText = 'データの読み込みに失敗しました';
+            document.getElementById('loading').style.display = 'block';
           }
         })
         .catch(err => {
-          document.getElementById('loading').innerText = '通信エラーが発生しました';
+          syncBadge.style.display = 'none';
+          if (tasks.length === 0) {
+            document.getElementById('loading').innerText = '通信エラーが発生しました';
+            document.getElementById('loading').style.display = 'block';
+          }
           console.error(err);
         });
     }
@@ -446,6 +488,7 @@
           });
           const otherTasks = tasks.filter(t => t.parentId || t.completed);
           tasks = [...orderedParents, ...otherTasks];
+          saveLocalCache();
 
           fetch(GAS_API_URL, {
             method: 'POST',
@@ -519,7 +562,6 @@
       let p = String(task.priority || '3').trim();
       let pClass = `p-${p}`;
 
-      // サブタスクアイコン (階層ブランチ矢印)
       let subBadgeHtml = subtasks.length > 0 
         ? `<span class="subtask-badge">
              <svg class="meta-badge-icon" viewBox="0 0 24 24"><polyline points="15 10 20 15 15 20"></polyline><path d="M4 4v7a4 4 0 0 0 4 4h12"></path></svg>
@@ -527,7 +569,6 @@
            </span>` 
         : '';
 
-      // 繰り返しアイコン (ループ矢印)
       let repeatBadgeHtml = task.repeat 
         ? `<span class="repeat-badge">
              <svg class="meta-badge-icon" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
@@ -535,7 +576,6 @@
            </span>` 
         : '';
 
-      // 時間アイコン (時計)
       let timeBadgeHtml = task.time 
         ? `<span class="time-badge">
              <svg class="meta-badge-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -543,7 +583,6 @@
            </span>` 
         : '';
 
-      // メモアイコン (ノートテキスト)
       let memoPreviewHtml = task.memo 
         ? `<div class="task-memo-preview">
              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
@@ -614,6 +653,7 @@
         expandedTaskIds.delete(target.id);
       }
 
+      saveLocalCache();
       renderTasks();
 
       fetch(GAS_API_URL, {
@@ -622,6 +662,7 @@
         body: JSON.stringify({ action: 'updateTaskStatus', taskId: id, completed: target.completed })
       }).catch(() => {
         target.completed = !target.completed;
+        saveLocalCache();
         renderTasks();
       });
     }
@@ -702,7 +743,6 @@
       titleInput.value = target.title || '';
       dateInput.value = target.date || todayStr;
 
-      // 時間の復元（例: "10:30" を分解）
       if (target.time && target.time.includes(':')) {
         const parts = target.time.split(':');
         hourSelect.value = parts[0].padStart(2, '0');
@@ -739,7 +779,6 @@
       const parentId = parentIdInput.value;
       const date = dateInput.value;
       
-      // 時間の合成（時が選ばれていれば分と連結、未選択なら空文字）
       const h = hourSelect.value;
       const m = minuteSelect.value;
       const time = h ? `${h}:${m || '00'}` : '';
@@ -759,6 +798,7 @@
           target.priority = priority;
           target.repeat = repeat;
           target.memo = memo;
+          saveLocalCache();
           renderTasks();
         }
 
@@ -788,6 +828,7 @@
           expandedTaskIds.add(parentId);
         }
 
+        saveLocalCache();
         renderTasks();
 
         fetch(GAS_API_URL, {
@@ -805,6 +846,7 @@
       modal.classList.remove('active');
       tasks = tasks.filter(t => t.id !== id && t.parentId !== id);
       expandedTaskIds.delete(id);
+      saveLocalCache();
       renderTasks();
 
       fetch(GAS_API_URL, {
@@ -863,6 +905,7 @@
           } else {
             dailyNotes.push({ date: todayStr, content: content });
           }
+          saveLocalCache();
         }
       })
       .catch(() => {
