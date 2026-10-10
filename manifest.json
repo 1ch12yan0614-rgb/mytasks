@@ -1,0 +1,15 @@
+{
+  "name": "TickTask",
+  "short_name": "TickTask",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F4F6F9",
+  "theme_color": "#3E63DD",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/906/906334.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}
