@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>チェックリスト</title>
+  <title>To-Do List</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#F4F6F9">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -50,7 +50,6 @@
     .task-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 7px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; user-select: none; }
     .task-main { padding: 9px 12px; display: flex; align-items: center; gap: 10px; }
 
-    /* ドラッグ時の浮遊・ゴースト表示 */
     .sortable-ghost { opacity: 0.25; background: #CBD5E1 !important; border: 1px dashed var(--primary); }
     .sortable-chosen { box-shadow: 0 12px 28px rgba(0,0,0,0.18) !important; transform: scale(1.02); z-index: 999; }
     .sortable-fallback { opacity: 0.98 !important; transform: scale(1.03); box-shadow: 0 16px 36px rgba(0,0,0,0.22) !important; }
@@ -135,10 +134,12 @@
     .today-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
     .today-note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .today-note-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-    .note-status { font-size: 11.5px; color: var(--text-sub); }
-    .daily-textarea { width: 100%; min-height: 120px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: #FAFAFA; font-size: 13.5px; line-height: 1.55; outline: none; resize: vertical; font-family: inherit; }
+    .note-status { font-size: 11.5px; color: var(--text-sub); font-weight: 500; transition: all 0.2s; }
+    
+    /* ★デイリーメモ入力欄の拡大（min-height: 260px） */
+    .daily-textarea { width: 100%; min-height: 260px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: #FAFAFA; font-size: 14px; line-height: 1.65; outline: none; resize: vertical; font-family: inherit; }
     .daily-textarea:focus { border-color: var(--primary); background: #FFF; }
-    .save-note-btn { margin-top: 8px; width: 100%; padding: 9px; font-size: 13.5px; font-weight: 600; border: none; border-radius: 9px; background: var(--primary); color: #FFF; cursor: pointer; }
+    
     .past-notes-title { font-size: 13px; font-weight: 700; color: var(--text-sub); margin: 10px 4px 6px 4px; }
     .past-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.02); }
     .past-note-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
@@ -154,7 +155,8 @@
   <div id="app">
     <div class="sticky-header">
       <header>
-        <h1>チェックリスト</h1>
+        <!-- ★タイトルを To-Do List に変更 -->
+        <h1>To-Do List</h1>
         <div class="header-right">
           <span class="date-badge" id="todayLabel"></span>
         </div>
@@ -190,7 +192,6 @@
             <span class="note-status" id="noteStatusLabel"></span>
           </div>
           <textarea id="todayNoteInput" class="daily-textarea" placeholder="今日思いついたことや日記、メモを入力..."></textarea>
-          <button class="save-note-btn" onclick="saveTodayNote()">保存する</button>
         </div>
 
         <div class="past-notes-title">過去のメモ</div>
@@ -272,8 +273,9 @@
     let showCompleted = false;
     let currentTab = 'tasks';
     let sortableInstance = null;
+    let noteSaveTimeout = null;
 
-    // ★日本時間(JST)基準でローカル日付文字列(YYYY-MM-DD)を生成する安全関数
+    // 日本時間(JST)基準でローカル日付文字列(YYYY-MM-DD)を生成
     function getLocalDateString(d = new Date()) {
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -287,6 +289,7 @@
     window.onload = function() {
       loadAllData();
       initSortable();
+      initAutoSaveNote();
     };
 
     function loadAllData() {
@@ -336,22 +339,22 @@
       }
     }
 
-    // ★カードを0.5秒（500ms）長押しでドラッグ並び替え
+    // 0.5秒長押しドラッグ並び替え
     function initSortable() {
       const container = document.getElementById('uncompletedList');
       sortableInstance = new Sortable(container, {
-        delay: 500,              // ★ 約0.5秒の長押しでドラッグ開始
-        delayOnTouchOnly: true,  // スマホのタッチ時のみ長押し判定（普段のスクロールを邪魔しない）
-        touchStartThreshold: 4,  // 微小な指のブレでの誤ドラッグ防止
+        delay: 500,
+        delayOnTouchOnly: true,
+        touchStartThreshold: 4,
         animation: 250,
         easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
-        forceFallback: true,     // 滑らかな追従
+        forceFallback: true,
         fallbackClass: 'sortable-fallback',
         fallbackOnBody: true,
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
         onChoose: function() {
-          if (navigator.vibrate) navigator.vibrate(20); // 0.5秒長押し成功時に微振動
+          if (navigator.vibrate) navigator.vibrate(20);
         },
         onEnd: function () {
           const cardElements = container.querySelectorAll('.task-card');
@@ -663,6 +666,66 @@
       });
     };
 
+    // ==========================================
+    // デイリーメモ自動保存リスナー
+    // ==========================================
+
+    function initAutoSaveNote() {
+      const noteInput = document.getElementById('todayNoteInput');
+      const statusLabel = document.getElementById('noteStatusLabel');
+
+      noteInput.addEventListener('input', function() {
+        statusLabel.innerText = '入力中...';
+        clearTimeout(noteSaveTimeout);
+        noteSaveTimeout = setTimeout(() => {
+          autoSaveTodayNote();
+        }, 800);
+      });
+
+      noteInput.addEventListener('blur', function() {
+        if (noteSaveTimeout) {
+          clearTimeout(noteSaveTimeout);
+          noteSaveTimeout = null;
+          autoSaveTodayNote();
+        }
+      });
+    }
+
+    function autoSaveTodayNote() {
+      const noteInput = document.getElementById('todayNoteInput');
+      const content = noteInput.value;
+      const statusLabel = document.getElementById('noteStatusLabel');
+
+      statusLabel.innerText = '保存中...';
+
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'saveDailyNote', date: todayStr, content: content })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'success') {
+          statusLabel.innerText = '✓ 保存済み';
+          setTimeout(() => {
+            if (statusLabel.innerText === '✓ 保存済み') {
+              statusLabel.innerText = '';
+            }
+          }, 2000);
+
+          const idx = dailyNotes.findIndex(n => n.date === todayStr);
+          if (idx >= 0) {
+            dailyNotes[idx].content = content;
+          } else {
+            dailyNotes.push({ date: todayStr, content: content });
+          }
+        }
+      })
+      .catch(() => {
+        statusLabel.innerText = '保存失敗';
+      });
+    }
+
     function renderDailyNotes() {
       const todayNote = dailyNotes.find(n => n.date === todayStr);
       document.getElementById('todayNoteInput').value = todayNote ? todayNote.content : '';
@@ -670,8 +733,9 @@
       const pastListContainer = document.getElementById('pastNotesList');
       pastListContainer.innerHTML = '';
 
+      // 文字が入っている日のみ過去ログに抽出
       const pastNotes = dailyNotes
-        .filter(n => n.date !== todayStr)
+        .filter(n => n.date !== todayStr && n.content && n.content.trim() !== '')
         .sort((a, b) => b.date.localeCompare(a.date));
 
       if (pastNotes.length === 0) {
@@ -687,7 +751,7 @@
             <span class="past-note-date">${note.date}</span>
             <span style="font-size:12px; color:var(--text-sub);" class="toggle-icon">開く ▼</span>
           </div>
-          <div class="past-note-body hidden">${escapeHtml(note.content || '（内容なし）')}</div>
+          <div class="past-note-body hidden">${escapeHtml(note.content)}</div>
         `;
         pastListContainer.appendChild(item);
       });
@@ -698,35 +762,6 @@
       const iconEl = headerEl.querySelector('.toggle-icon');
       const isHidden = bodyEl.classList.toggle('hidden');
       iconEl.innerText = isHidden ? '開く ▼' : '閉じる ▲';
-    }
-
-    function saveTodayNote() {
-      const content = document.getElementById('todayNoteInput').value;
-      const statusLabel = document.getElementById('noteStatusLabel');
-      statusLabel.innerText = '保存中...';
-
-      fetch(GAS_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'saveDailyNote', date: todayStr, content: content })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res.status === 'success') {
-          statusLabel.innerText = '✓ 保存完了';
-          setTimeout(() => { statusLabel.innerText = ''; }, 2000);
-          const idx = dailyNotes.findIndex(n => n.date === todayStr);
-          if (idx >= 0) {
-            dailyNotes[idx].content = content;
-          } else {
-            dailyNotes.push({ date: todayStr, content: content });
-          }
-          renderDailyNotes();
-        }
-      })
-      .catch(() => {
-        statusLabel.innerText = '保存失敗';
-      });
     }
 
     document.getElementById('completedToggle').onclick = () => {
