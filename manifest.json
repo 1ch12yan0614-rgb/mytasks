@@ -1,6 +1,6 @@
 {
-  "name": "チェックリスト",
-  "short_name": "チェックリスト",
+  "name": "To-Doリスト",
+  "short_name": "To-Doリスト",
   "id": "/mytasks/",
   "start_url": "./index.html",
   "scope": "./",
