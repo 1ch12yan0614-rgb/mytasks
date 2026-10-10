@@ -22,100 +22,105 @@
       --primary-light: #EEF2FF;
       --border: #E6E8EC;
       --radius: 18px;
+      --danger: #EF4444;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif; min-height: 100vh; display: flex; justify-content: center; padding-bottom: 90px; }
     #app { width: 100%; max-width: 480px; padding: 20px 16px; }
-    header { margin-bottom: 20px; padding: 0 4px; display: flex; justify-content: space-between; align-items: center; }
-    h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+    header { margin-bottom: 16px; padding: 0 4px; display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
     .header-right { display: flex; align-items: center; gap: 10px; }
     .date-badge { font-size: 13px; color: var(--text-sub); font-weight: 500; }
     .lock-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
+
+    /* タブ切り替えバー */
+    .tab-bar { display: flex; background: #EAECEF; border-radius: 12px; padding: 3px; margin-bottom: 18px; }
+    .tab-btn { flex: 1; padding: 8px 0; font-size: 14px; font-weight: 600; text-align: center; border: none; background: transparent; border-radius: 9px; cursor: pointer; color: var(--text-sub); transition: all 0.2s; }
+    .tab-btn.active { background: #FFFFFF; color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+    /* タスクカード */
     .section-title { font-size: 13px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 4px 10px 4px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
     .task-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(0,0,0,0.03); margin-bottom: 12px; overflow: hidden; }
-    .task-main { padding: 14px 16px; display: flex; align-items: center; gap: 14px; }
-    .check-btn { width: 42px; height: 42px; min-width: 42px; border-radius: 50%; border: 2px solid #D0D5DD; background: #FAFAFA; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    .check-btn svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
+    .task-main { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+    .check-btn { width: 38px; height: 38px; min-width: 38px; border-radius: 50%; border: 2px solid #D0D5DD; background: #FAFAFA; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+    .check-btn svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
     .check-btn.checked { background-color: #22C55E; border-color: #22C55E; }
     .check-btn.checked svg { opacity: 1; transform: scale(1); }
     .task-content { flex: 1; min-width: 0; cursor: pointer; }
     .task-title { font-size: 15px; font-weight: 600; color: var(--text-main); word-break: break-word; }
     .task-card.is-done .task-title { color: var(--text-sub); text-decoration: line-through; }
-    .task-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; font-size: 12px; color: var(--text-sub); }
+    .task-memo-preview { font-size: 12px; color: var(--text-sub); margin-top: 3px; display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .task-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 11.5px; color: var(--text-sub); }
     .subtask-badge { background: var(--primary-light); color: var(--primary); padding: 2px 7px; border-radius: 8px; font-weight: 600; font-size: 11px; }
 
-    /* 優先度バッジ（1:赤, 2:オレンジ, 3:黄色, 4:黄緑, 5:青） */
-    .priority-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; }
-    .p-1 { background: #FEE2E2; color: #DC2626; } /* 1: 赤 */
-    .p-2 { background: #FFEDD5; color: #EA580C; } /* 2: オレンジ */
-    .p-3 { background: #FEF9C3; color: #CA8A04; } /* 3: 黄色 */
-    .p-4 { background: #ECFCCB; color: #65A30D; } /* 4: 黄緑 */
-    .p-5 { background: #DBEAFE; color: #2563EB; } /* 5: 青 */
+    .card-actions { display: flex; align-items: center; gap: 6px; }
+    .edit-icon-btn { background: none; border: none; padding: 6px; cursor: pointer; color: #9CA3AF; display: flex; align-items: center; justify-content: center; }
+
+    /* 優先度バッジ */
+    .priority-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; min-width: 24px; text-align: center; }
+    .p-1 { background: #FEE2E2; color: #DC2626; }
+    .p-2 { background: #FFEDD5; color: #EA580C; }
+    .p-3 { background: #FEF9C3; color: #CA8A04; }
+    .p-4 { background: #ECFCCB; color: #65A30D; }
+    .p-5 { background: #DBEAFE; color: #2563EB; }
 
     .subtasks-container { background-color: #FAFBFD; border-top: 1px solid #F0F2F5; padding: 10px 16px 14px 16px; display: none; }
     .subtasks-container.expanded { display: block; }
-    .subtask-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
-    .subtask-btn { width: 26px; height: 26px; min-width: 26px; border-radius: 50%; border: 2px solid #D0D5DD; background: #FFF; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    .subtask-btn svg { width: 12px; height: 12px; stroke: #fff; stroke-width: 3; stroke-linecap: round; opacity: 0; }
+    .subtask-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+    .subtask-btn { width: 24px; height: 24px; min-width: 24px; border-radius: 50%; border: 2px solid #D0D5DD; background: #FFF; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .subtask-btn svg { width: 11px; height: 11px; stroke: #fff; stroke-width: 3; stroke-linecap: round; opacity: 0; }
     .subtask-btn.checked { background-color: #22C55E; border-color: #22C55E; }
     .subtask-btn.checked svg { opacity: 1; }
-    .subtask-title { font-size: 13.5px; color: var(--text-main); flex: 1; }
+    .subtask-title { font-size: 13.5px; color: var(--text-main); flex: 1; word-break: break-word; }
     .subtask-item.is-done .subtask-title { color: var(--text-sub); text-decoration: line-through; }
     .add-subtask-btn { margin-top: 8px; font-size: 12px; color: var(--primary); font-weight: 600; background: transparent; border: none; cursor: pointer; }
+
+    /* FAB */
     .fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #3E63DD, #2E4EC2); box-shadow: 0 8px 24px rgba(62,99,221,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 100; }
     .fab svg { width: 28px; height: 28px; stroke: #fff; stroke-width: 2.5; }
+
+    /* モーダル */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
     .modal-overlay.active { display: flex; }
-    .modal-sheet { width: 100%; max-width: 500px; background: #FFFFFF; border-radius: 24px 24px 0 0; padding: 24px 20px 32px 20px; animation: slideUp 0.25s ease-out; }
+    .modal-sheet { width: 100%; max-width: 500px; background: #FFFFFF; border-radius: 24px 24px 0 0; padding: 22px 20px 28px 20px; animation: slideUp 0.25s ease-out; max-height: 90vh; overflow-y: auto; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .sheet-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
-    .form-group { margin-bottom: 14px; }
-    .input-text { width: 100%; padding: 12px 14px; font-size: 15px; border-radius: 12px; border: 1px solid var(--border); background: #F9FAFB; outline: none; }
-    .form-row { display: flex; gap: 12px; }
+    .form-group { margin-bottom: 12px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; }
+    .input-text, .input-textarea { width: 100%; padding: 12px 14px; font-size: 15px; border-radius: 12px; border: 1px solid var(--border); background: #F9FAFB; outline: none; font-family: inherit; }
+    .input-textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+    .form-row { display: flex; gap: 10px; }
     .form-row .form-group { flex: 1; }
-    .sheet-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .sheet-actions { display: flex; gap: 10px; margin-top: 18px; }
     .btn { flex: 1; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 12px; border: none; cursor: pointer; }
     .btn-cancel { background: #F2F4F7; color: #475467; }
     .btn-submit { background: var(--primary); color: #FFF; }
-    .loading-wrap { text-align: center; padding: 40px 0; color: var(--text-sub); }
+    .btn-delete { background: #FEE2E2; color: #DC2626; flex: 0.6; }
 
-    /* ロック画面のスタイル */
-    #lockScreen {
-      position: fixed; inset: 0; background: #FFFFFF; z-index: 999;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-    }
-    .lock-icon-badge {
-      width: 72px;
-      height: 72px;
-      background: #111827;
-      border-radius: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
-    }
-    .lock-icon-badge svg {
-      width: 36px;
-      height: 36px;
-      stroke: #FFFFFF;
-      stroke-width: 2.2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      fill: none;
-    }
+    /* デイリーメモ画面 */
+    .daily-note-container { display: flex; flex-direction: column; gap: 16px; }
+    .today-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); }
+    .today-note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .today-note-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .note-status { font-size: 12px; color: var(--text-sub); }
+    .daily-textarea { width: 100%; min-height: 140px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: #FAFAFA; font-size: 14px; line-height: 1.6; outline: none; resize: vertical; font-family: inherit; }
+    .daily-textarea:focus { border-color: var(--primary); background: #FFF; }
+    .save-note-btn { margin-top: 10px; width: 100%; padding: 10px; font-size: 14px; font-weight: 600; border: none; border-radius: 10px; background: var(--primary); color: #FFF; cursor: pointer; }
+    .past-notes-title { font-size: 14px; font-weight: 700; color: var(--text-sub); margin: 12px 4px 6px 4px; }
+    .past-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+    .past-note-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .past-note-date { font-size: 14px; font-weight: 700; color: var(--text-main); }
+    .past-note-body { margin-top: 10px; font-size: 13.5px; line-height: 1.6; color: #374151; white-space: pre-wrap; word-break: break-word; border-top: 1px dashed var(--border); padding-top: 8px; }
+
+    /* ロック画面 */
+    #lockScreen { position: fixed; inset: 0; background: #FFFFFF; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    .lock-icon-badge { width: 72px; height: 72px; background: #111827; border-radius: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14); }
+    .lock-icon-badge svg { width: 36px; height: 36px; stroke: #FFFFFF; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
     .lock-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
     .lock-sub { font-size: 14px; color: var(--text-sub); margin-bottom: 24px; }
-    .pin-input {
-      width: 180px; text-align: center; font-size: 32px; letter-spacing: 12px;
-      padding: 10px; border: 2px solid var(--border); border-radius: 16px; outline: none;
-      font-family: inherit; margin-bottom: 20px;
-    }
-    .pin-input:focus { border-color: var(--primary); }
-    .pin-btn {
-      width: 180px; padding: 14px; font-size: 16px; font-weight: 700;
-      background: var(--primary); color: #FFF; border: none; border-radius: 14px; cursor: pointer;
-    }
+    .pin-input { width: 180px; text-align: center; font-size: 32px; letter-spacing: 12px; padding: 10px; border: 2px solid var(--border); border-radius: 16px; outline: none; font-family: inherit; margin-bottom: 20px; }
+    .pin-btn { width: 180px; padding: 14px; font-size: 16px; font-weight: 700; background: var(--primary); color: #FFF; border: none; border-radius: 14px; cursor: pointer; }
+    .loading-wrap { text-align: center; padding: 40px 0; color: var(--text-sub); }
   </style>
 </head>
 <body>
@@ -128,7 +133,7 @@
         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
       </svg>
     </div>
-    <div class="lock-title">認証画面</div>
+    <div class="lock-title">チェックリスト</div>
     <div class="lock-sub">4桁の暗証番号を入力してください</div>
     <input type="password" id="pinInput" class="pin-input" maxlength="4" pattern="[0-9]*" inputmode="numeric" placeholder="••••">
     <button class="pin-btn" onclick="unlockApp()">解除</button>
@@ -136,7 +141,7 @@
 
   <div id="app" style="display: none;">
     <header>
-      <h1>Today's Task</h1>
+      <h1>チェックリスト</h1>
       <div class="header-right">
         <span class="date-badge" id="todayLabel"></span>
         <button class="lock-btn" onclick="lockApp()" title="再ロック">
@@ -147,14 +152,45 @@
         </button>
       </div>
     </header>
+
+    <!-- タブ切り替え -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabTasks" onclick="switchTab('tasks')">タスク</button>
+      <button class="tab-btn" id="tabNotes" onclick="switchTab('notes')">デイリーメモ</button>
+    </div>
+
     <div id="loading" class="loading-wrap">データを読み込み中...</div>
-    <div id="uncompletedList"></div>
-    <div id="completedSection" style="display: none;">
-      <div class="section-title" id="completedToggle">
-        <span>完了済み (<span id="completedCount">0</span>)</span>
-        <span id="completedIcon">▼</span>
+
+    <!-- タスクビュー -->
+    <div id="tasksView">
+      <div id="uncompletedList"></div>
+      <div id="completedSection" style="display: none;">
+        <div class="section-title" id="completedToggle">
+          <span>完了済み (<span id="completedCount">0</span>)</span>
+          <span id="completedIcon">▼</span>
+        </div>
+        <div id="completedList"></div>
       </div>
-      <div id="completedList"></div>
+    </div>
+
+    <!-- デイリーメモビュー -->
+    <div id="notesView" style="display: none;">
+      <div class="daily-note-container">
+        <div class="today-note-card">
+          <div class="today-note-header">
+            <div class="today-note-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              今日のメモ (<span id="todayNoteDateLabel"></span>)
+            </div>
+            <span class="note-status" id="noteStatusLabel"></span>
+          </div>
+          <textarea id="todayNoteInput" class="daily-textarea" placeholder="今日思いついたことや日記、メモを入力..."></textarea>
+          <button class="save-note-btn" onclick="saveTodayNote()">保存する</button>
+        </div>
+
+        <div class="past-notes-title">過去のメモ</div>
+        <div id="pastNotesList"></div>
+      </div>
     </div>
   </div>
 
@@ -162,28 +198,44 @@
     <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
   </button>
 
+  <!-- タスク作成・編集モーダル -->
   <div class="modal-overlay" id="taskModal">
     <div class="modal-sheet">
       <div class="sheet-title" id="modalTitle">新しいタスク</div>
+      <input type="hidden" id="taskIdInput">
       <input type="hidden" id="taskParentId">
+
       <div class="form-group">
+        <label class="form-label">タスク名</label>
         <input type="text" id="taskTitleInput" class="input-text" placeholder="何をしますか？">
       </div>
+
       <div class="form-row" id="additionalFields">
-        <div class="form-group"><input type="date" id="taskDateInput" class="input-text"></div>
         <div class="form-group">
+          <label class="form-label">実行日</label>
+          <input type="date" id="taskDateInput" class="input-text">
+        </div>
+        <div class="form-group">
+          <label class="form-label">優先度</label>
           <select id="taskPriorityInput" class="input-text">
-            <option value="1" selected>優先度 1</option>
-            <option value="2">優先度 2</option>
-            <option value="3">優先度 3</option>
-            <option value="4">優先度 4</option>
-            <option value="5">優先度 5</option>
+            <option value="1">1 (最優先)</option>
+            <option value="2">2 (高)</option>
+            <option value="3" selected>3 (標準)</option>
+            <option value="4">4 (低)</option>
+            <option value="5">5 (保留)</option>
           </select>
         </div>
       </div>
+
+      <div class="form-group" id="memoField">
+        <label class="form-label">メモ（任意）</label>
+        <textarea id="taskMemoInput" class="input-textarea" placeholder="URLや補足メモなどを入力"></textarea>
+      </div>
+
       <div class="sheet-actions">
-        <button class="btn btn-cancel" id="btnCancel">キャンセル</button>
-        <button class="btn btn-submit" id="btnSave">追加</button>
+        <button class="btn btn-delete" id="btnDelete" style="display: none;">削除</button>
+        <button class="btn btn-cancel" id="btnCancel">閉じる</button>
+        <button class="btn btn-submit" id="btnSave">保存</button>
       </div>
     </div>
   </div>
@@ -197,14 +249,18 @@
 
     let currentPin = '';
     let tasks = [];
+    let dailyNotes = [];
     let showCompleted = false;
+    let currentTab = 'tasks';
 
-    // 自動ログインチェック
+    const todayObj = new Date();
+    const todayStr = todayObj.toISOString().split('T')[0];
+
     window.onload = function() {
       const savedPin = localStorage.getItem('task_pin');
       if (savedPin) {
         currentPin = savedPin;
-        loadTasksWithPin(savedPin);
+        loadAllData(savedPin);
       } else {
         document.getElementById('pinInput').focus();
       }
@@ -217,11 +273,11 @@
         return;
       }
       currentPin = pin;
-      loadTasksWithPin(pin);
+      loadAllData(pin);
     }
 
-    function loadTasksWithPin(pin) {
-      fetch(`${GAS_API_URL}?action=getTasks&pin=${pin}`)
+    function loadAllData(pin) {
+      fetch(`${GAS_API_URL}?action=getAllData&pin=${pin}`)
         .then(res => res.json())
         .then(res => {
           if (res.status === 'success') {
@@ -230,8 +286,12 @@
             document.getElementById('app').style.display = 'block';
             document.getElementById('fabAdd').style.display = 'flex';
             document.getElementById('loading').style.display = 'none';
-            tasks = res.data;
+            
+            tasks = res.tasks || [];
+            dailyNotes = res.dailyNotes || [];
+            
             renderTasks();
+            renderDailyNotes();
           } else {
             alert('暗証番号が間違っています');
             document.getElementById('pinInput').value = '';
@@ -246,10 +306,29 @@
       location.reload();
     }
 
-    const today = new Date();
-    document.getElementById('todayLabel').innerText = today.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', weekday: 'short' });
-    document.getElementById('taskDateInput').value = today.toISOString().split('T')[0];
+    document.getElementById('todayLabel').innerText = todayObj.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', weekday: 'short' });
+    document.getElementById('todayNoteDateLabel').innerText = todayStr;
+    document.getElementById('taskDateInput').value = todayStr;
 
+    // タブ切り替え
+    function switchTab(tab) {
+      currentTab = tab;
+      if (tab === 'tasks') {
+        document.getElementById('tabTasks').classList.add('active');
+        document.getElementById('tabNotes').classList.remove('active');
+        document.getElementById('tasksView').style.display = 'block';
+        document.getElementById('notesView').style.display = 'none';
+        document.getElementById('fabAdd').style.display = 'flex';
+      } else {
+        document.getElementById('tabTasks').classList.remove('active');
+        document.getElementById('tabNotes').classList.add('active');
+        document.getElementById('tasksView').style.display = 'none';
+        document.getElementById('notesView').style.display = 'block';
+        document.getElementById('fabAdd').style.display = 'none';
+      }
+    }
+
+    // タスク描画
     function renderTasks() {
       const uncompletedContainer = document.getElementById('uncompletedList');
       const completedContainer = document.getElementById('completedList');
@@ -287,10 +366,10 @@
       const card = document.createElement('div');
       card.className = `task-card ${task.completed ? 'is-done' : ''}`;
       
-      // 優先度クラス判定（1:赤, 2:オレンジ, 3:黄色, 4:黄緑, 5:青）
       let p = String(task.priority || '3').trim();
       let pClass = `p-${p}`;
       let subBadgeHtml = subtasks.length > 0 ? `<span class="subtask-badge">ㄴ ${subDoneCount}/${subtasks.length}</span>` : '';
+      let memoPreviewHtml = task.memo ? `<div class="task-memo-preview">📝 ${escapeHtml(task.memo)}</div>` : '';
 
       card.innerHTML = `
         <div class="task-main">
@@ -299,12 +378,18 @@
           </div>
           <div class="task-content" onclick="toggleSubtasks('${task.id}')">
             <div class="task-title">${escapeHtml(task.title)}</div>
+            ${memoPreviewHtml}
             <div class="task-meta">
-              <span class="meta-item">${task.date || ''}</span>
+              <span>${task.date || ''}</span>
               ${subBadgeHtml}
             </div>
           </div>
-          <div class="priority-badge ${pClass}">${p}</div>
+          <div class="card-actions">
+            <div class="priority-badge ${pClass}">${p}</div>
+            <button class="edit-icon-btn" onclick="openEditTaskModal('${task.id}')">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            </button>
+          </div>
         </div>
         <div class="subtasks-container" id="sub-${task.id}">
           <div>
@@ -313,7 +398,7 @@
                 <div class="subtask-btn ${sub.completed ? 'checked' : ''}" onclick="toggleTask('${sub.id}')">
                   <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 </div>
-                <span class="subtask-title">${escapeHtml(sub.title)}</span>
+                <span class="subtask-title" onclick="openEditTaskModal('${sub.id}')">${escapeHtml(sub.title)}</span>
               </div>
             `).join('')}
           </div>
@@ -344,27 +429,68 @@
       });
     }
 
+    // モーダル管理（新規・編集・サブタスク）
     const modal = document.getElementById('taskModal');
-    const titleInput = document.getElementById('taskTitleInput');
+    const taskIdInput = document.getElementById('taskIdInput');
     const parentIdInput = document.getElementById('taskParentId');
+    const titleInput = document.getElementById('taskTitleInput');
+    const dateInput = document.getElementById('taskDateInput');
+    const priorityInput = document.getElementById('taskPriorityInput');
+    const memoInput = document.getElementById('taskMemoInput');
     const addFields = document.getElementById('additionalFields');
+    const memoField = document.getElementById('memoField');
+    const btnDelete = document.getElementById('btnDelete');
 
     document.getElementById('fabAdd').onclick = function() {
       document.getElementById('modalTitle').innerText = '新しいタスク';
+      taskIdInput.value = '';
       parentIdInput.value = '';
       titleInput.value = '';
+      dateInput.value = todayStr;
+      priorityInput.value = '3';
+      memoInput.value = '';
       addFields.style.display = 'flex';
+      memoField.style.display = 'block';
+      btnDelete.style.display = 'none';
       modal.classList.add('active');
       titleInput.focus();
     };
 
     function openAddSubtaskModal(parentId) {
       document.getElementById('modalTitle').innerText = 'サブタスクを追加';
+      taskIdInput.value = '';
       parentIdInput.value = parentId;
       titleInput.value = '';
+      memoInput.value = '';
       addFields.style.display = 'none';
+      memoField.style.display = 'none';
+      btnDelete.style.display = 'none';
       modal.classList.add('active');
       titleInput.focus();
+    }
+
+    function openEditTaskModal(id) {
+      const target = tasks.find(t => t.id === id);
+      if (!target) return;
+
+      document.getElementById('modalTitle').innerText = 'タスクを編集';
+      taskIdInput.value = target.id;
+      parentIdInput.value = target.parentId || '';
+      titleInput.value = target.title || '';
+      dateInput.value = target.date || todayStr;
+      priorityInput.value = target.priority || '3';
+      memoInput.value = target.memo || '';
+
+      if (target.parentId) {
+        addFields.style.display = 'none';
+        memoField.style.display = 'none';
+      } else {
+        addFields.style.display = 'flex';
+        memoField.style.display = 'block';
+      }
+
+      btnDelete.style.display = 'block';
+      modal.classList.add('active');
     }
 
     document.getElementById('btnCancel').onclick = () => modal.classList.remove('active');
@@ -372,29 +498,124 @@
     document.getElementById('btnSave').onclick = function() {
       const title = titleInput.value.trim();
       if (!title) return;
+      const id = taskIdInput.value;
       const parentId = parentIdInput.value;
-      const date = document.getElementById('taskDateInput').value;
-      const priority = document.getElementById('taskPriorityInput').value;
+      const date = dateInput.value;
+      const priority = priorityInput.value;
+      const memo = memoInput.value.trim();
 
       modal.classList.remove('active');
+
+      if (id) {
+        // 編集
+        const target = tasks.find(t => t.id === id);
+        if (target) {
+          target.title = title;
+          target.date = date;
+          target.priority = priority;
+          target.memo = memo;
+          renderTasks();
+        }
+
+        fetch(GAS_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'updateTask', pin: currentPin, data: { id, title, date, priority, memo } })
+        });
+      } else {
+        // 新規作成
+        fetch(GAS_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'addTask', pin: currentPin, data: { title, parentId, date, priority, memo } })
+        })
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            tasks.push(res.data);
+            renderTasks();
+            if (parentId) {
+              const sub = document.getElementById(`sub-${parentId}`);
+              if (sub) sub.classList.add('expanded');
+            }
+          }
+        });
+      }
+    };
+
+    btnDelete.onclick = function() {
+      const id = taskIdInput.value;
+      if (!id || !confirm('このタスクを削除しますか？')) return;
+
+      modal.classList.remove('active');
+      tasks = tasks.filter(t => t.id !== id && t.parentId !== id);
+      renderTasks();
 
       fetch(GAS_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'addTask', pin: currentPin, data: { title, parentId, date, priority } })
+        body: JSON.stringify({ action: 'deleteTask', pin: currentPin, taskId: id })
+      });
+    };
+
+    // デイリーメモ関連
+    function renderDailyNotes() {
+      const todayNote = dailyNotes.find(n => n.date === todayStr);
+      document.getElementById('todayNoteInput').value = todayNote ? todayNote.content : '';
+
+      const pastListContainer = document.getElementById('pastNotesList');
+      pastListContainer.innerHTML = '';
+
+      const pastNotes = dailyNotes
+        .filter(n => n.date !== todayStr)
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+      if (pastNotes.length === 0) {
+        pastListContainer.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center; padding:16px;">過去のメモはまだありません</div>';
+        return;
+      }
+
+      pastNotes.forEach(note => {
+        const item = document.createElement('div');
+        item.className = 'past-note-card';
+        item.innerHTML = `
+          <div class="past-note-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
+            <span class="past-note-date">${note.date}</span>
+            <span style="font-size:12px; color:var(--text-sub);">表示切替</span>
+          </div>
+          <div class="past-note-body">${escapeHtml(note.content || '（内容なし）')}</div>
+        `;
+        pastListContainer.appendChild(item);
+      });
+    }
+
+    function saveTodayNote() {
+      const content = document.getElementById('todayNoteInput').value;
+      const statusLabel = document.getElementById('noteStatusLabel');
+      statusLabel.innerText = '保存中...';
+
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'saveDailyNote', pin: currentPin, date: todayStr, content: content })
       })
       .then(res => res.json())
       .then(res => {
         if (res.status === 'success') {
-          tasks.push(res.data);
-          renderTasks();
-          if (parentId) {
-            const sub = document.getElementById(`sub-${parentId}`);
-            if (sub) sub.classList.add('expanded');
+          statusLabel.innerText = '✓ 保存完了';
+          setTimeout(() => { statusLabel.innerText = ''; }, 2000);
+          const idx = dailyNotes.findIndex(n => n.date === todayStr);
+          if (idx >= 0) {
+            dailyNotes[idx].content = content;
+          } else {
+            dailyNotes.push({ date: todayStr, content: content });
           }
         }
+      })
+      .catch(() => {
+        statusLabel.innerText = '保存失敗';
       });
-    };
+    }
 
     document.getElementById('completedToggle').onclick = () => {
       showCompleted = !showCompleted;
