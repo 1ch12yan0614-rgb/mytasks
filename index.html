@@ -50,7 +50,7 @@
     .task-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 7px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; user-select: none; }
     .task-main { padding: 9px 12px; display: flex; align-items: center; gap: 10px; }
 
-    /* 長押しドラッグ時の演出用クラス */
+    /* ドラッグ時の浮遊・ゴースト表示 */
     .sortable-ghost { opacity: 0.25; background: #CBD5E1 !important; border: 1px dashed var(--primary); }
     .sortable-chosen { box-shadow: 0 12px 28px rgba(0,0,0,0.18) !important; transform: scale(1.02); z-index: 999; }
     .sortable-fallback { opacity: 0.98 !important; transform: scale(1.03); box-shadow: 0 16px 36px rgba(0,0,0,0.22) !important; }
@@ -273,7 +273,7 @@
     let currentTab = 'tasks';
     let sortableInstance = null;
 
-    // ★修正①: 日本時間(JST)基準でローカル日付文字列(YYYY-MM-DD)を生成する安全関数（日付ズレ修正）
+    // ★日本時間(JST)基準でローカル日付文字列(YYYY-MM-DD)を生成する安全関数
     function getLocalDateString(d = new Date()) {
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -336,11 +336,11 @@
       }
     }
 
-    // ★修正②: つまみ不要・カード長押し(約0.26秒)でドラッグ並び替え
+    // ★カードを0.5秒（500ms）長押しでドラッグ並び替え
     function initSortable() {
       const container = document.getElementById('uncompletedList');
       sortableInstance = new Sortable(container, {
-        delay: 260,              // 約0.26秒の長押しでドラッグ開始
+        delay: 500,              // ★ 約0.5秒の長押しでドラッグ開始
         delayOnTouchOnly: true,  // スマホのタッチ時のみ長押し判定（普段のスクロールを邪魔しない）
         touchStartThreshold: 4,  // 微小な指のブレでの誤ドラッグ防止
         animation: 250,
@@ -351,7 +351,7 @@
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
         onChoose: function() {
-          if (navigator.vibrate) navigator.vibrate(18); // 長押し成功時の振動
+          if (navigator.vibrate) navigator.vibrate(20); // 0.5秒長押し成功時に微振動
         },
         onEnd: function () {
           const cardElements = container.querySelectorAll('.task-card');
