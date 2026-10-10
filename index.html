@@ -47,23 +47,10 @@
 
     .section-title { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 4px 6px 4px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
     
-    .task-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 7px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
-    .task-main { padding: 8px 10px; display: flex; align-items: center; gap: 8px; }
-    
-    .drag-handle {
-      color: #94A3B8;
-      cursor: grab;
-      padding: 8px 6px;
-      margin: -6px -2px -6px -4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      touch-action: none;
-      user-select: none;
-    }
-    .drag-handle:active { cursor: grabbing; color: var(--primary); }
-    .drag-handle svg { width: 16px; height: 16px; pointer-events: none; }
+    .task-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 7px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; user-select: none; }
+    .task-main { padding: 9px 12px; display: flex; align-items: center; gap: 10px; }
 
+    /* 長押しドラッグ時の演出用クラス */
     .sortable-ghost { opacity: 0.25; background: #CBD5E1 !important; border: 1px dashed var(--primary); }
     .sortable-chosen { box-shadow: 0 12px 28px rgba(0,0,0,0.18) !important; transform: scale(1.02); z-index: 999; }
     .sortable-fallback { opacity: 0.98 !important; transform: scale(1.03); box-shadow: 0 16px 36px rgba(0,0,0,0.22) !important; }
@@ -93,11 +80,10 @@
     .task-memo-preview { font-size: 11px; color: var(--text-sub); margin-top: 1px; display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .task-meta { display: flex; align-items: center; gap: 5px; margin-top: 2px; font-size: 11px; color: var(--text-sub); flex-wrap: wrap; }
     
-    /* ★今日/明日/遅延のスマートバッジ */
     .date-tag { font-weight: 700; padding: 1px 6px; border-radius: 6px; font-size: 10.5px; display: inline-flex; align-items: center; }
-    .tag-today { background: #DCFCE7; color: #15803D; }    /* 今日：薄緑 */
-    .tag-tomorrow { background: #E0E7FF; color: #3730A3; } /* 明日：薄紫 */
-    .tag-overdue { background: #FEE2E2; color: #DC2626; }  /* 遅延：薄赤 */
+    .tag-today { background: #DCFCE7; color: #15803D; }
+    .tag-tomorrow { background: #E0E7FF; color: #3730A3; }
+    .tag-overdue { background: #FEE2E2; color: #DC2626; }
 
     .subtask-badge { background: var(--primary-light); color: var(--primary); padding: 1px 6px; border-radius: 6px; font-weight: 600; font-size: 10px; }
     .repeat-badge { background: #F3E8FF; color: #7E22CE; padding: 1px 6px; border-radius: 6px; font-weight: 600; font-size: 10px; }
@@ -287,8 +273,16 @@
     let currentTab = 'tasks';
     let sortableInstance = null;
 
+    // ★修正①: 日本時間(JST)基準でローカル日付文字列(YYYY-MM-DD)を生成する安全関数（日付ズレ修正）
+    function getLocalDateString(d = new Date()) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     const todayObj = new Date();
-    const todayStr = todayObj.toISOString().split('T')[0];
+    const todayStr = getLocalDateString(todayObj);
 
     window.onload = function() {
       loadAllData();
@@ -315,7 +309,6 @@
         });
     }
 
-    // ★相対日付（今日/明日/遅延/MM/DD）の判定
     function formatDisplayDate(dateStr) {
       if (!dateStr) return '';
       const parts = String(dateStr).trim().replace(/\//g, '-').split('-');
@@ -343,21 +336,22 @@
       }
     }
 
-    // ★滑らかなドラッグ操作（追従性・アニメーション・触覚フィードバック）
+    // ★修正②: つまみ不要・カード長押し(約0.26秒)でドラッグ並び替え
     function initSortable() {
       const container = document.getElementById('uncompletedList');
       sortableInstance = new Sortable(container, {
-        handle: '.drag-handle',
+        delay: 260,              // 約0.26秒の長押しでドラッグ開始
+        delayOnTouchOnly: true,  // スマホのタッチ時のみ長押し判定（普段のスクロールを邪魔しない）
+        touchStartThreshold: 4,  // 微小な指のブレでの誤ドラッグ防止
         animation: 250,
         easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
-        forceFallback: true,
+        forceFallback: true,     // 滑らかな追従
         fallbackClass: 'sortable-fallback',
         fallbackOnBody: true,
-        fallbackTolerance: 2,
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
         onChoose: function() {
-          if (navigator.vibrate) navigator.vibrate(12);
+          if (navigator.vibrate) navigator.vibrate(18); // 長押し成功時の振動
         },
         onEnd: function () {
           const cardElements = container.querySelectorAll('.task-card');
@@ -445,22 +439,10 @@
       let repeatBadgeHtml = task.repeat ? `<span class="repeat-badge">🔄 ${escapeHtml(task.repeat)}</span>` : '';
       let timeBadgeHtml = task.time ? `<span class="time-badge">🕒 ${escapeHtml(task.time)}</span>` : '';
       let memoPreviewHtml = task.memo ? `<div class="task-memo-preview">📝 ${escapeHtml(task.memo)}</div>` : '';
-
       const displayDateHtml = formatDisplayDate(task.date);
-
-      const dragHandleHtml = !task.completed ? `
-        <div class="drag-handle" title="ドラッグして並び替え">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
-            <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
-            <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
-          </svg>
-        </div>
-      ` : '';
 
       card.innerHTML = `
         <div class="task-main">
-          ${dragHandleHtml}
           <div class="check-btn ${task.completed ? 'checked' : ''}" onclick="toggleTask('${task.id}')">
             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </div>
@@ -739,6 +721,7 @@
           } else {
             dailyNotes.push({ date: todayStr, content: content });
           }
+          renderDailyNotes();
         }
       })
       .catch(() => {
