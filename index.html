@@ -294,8 +294,6 @@
     let currentTab = 'tasks';
     let sortableInstance = null;
     let noteSaveTimeout = null;
-    
-    // ★開いている親タスクのIDを記憶するセット（再描画でも閉じない）
     let expandedTaskIds = new Set();
 
     function getLocalDateString(d = new Date()) {
@@ -506,7 +504,6 @@
       return card;
     }
 
-    // ★サブタスク開閉時に状態をSetに記録
     function toggleSubtasks(parentId, contentEl) {
       const sub = document.getElementById(`sub-${parentId}`);
       const card = contentEl.closest('.task-card');
@@ -525,7 +522,6 @@
       if (!target) return;
       target.completed = !target.completed;
       
-      // 親タスクが完了になった場合は閉じる、サブタスク完了時は開いた状態をキープ
       if (!target.parentId && target.completed) {
         expandedTaskIds.delete(target.id);
       }
@@ -631,7 +627,7 @@
 
       btnDelete.style.display = 'block';
       modal.classList.add('active');
-      setTimeout(() => titleInput.focus(), 50);
+      // ★自動フォーカス（キーボード起動）を解除
     }
 
     document.getElementById('btnCancel').onclick = () => modal.classList.remove('active');
@@ -683,7 +679,6 @@
 
         tasks.push(newTask);
         
-        // サブタスク追加時は親タスクを開いた状態として記憶
         if (parentId) {
           expandedTaskIds.add(parentId);
         }
