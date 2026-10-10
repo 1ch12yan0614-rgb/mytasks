@@ -29,9 +29,11 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
     body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif; min-height: 100vh; display: flex; justify-content: center; padding-bottom: 90px; }
     #app { width: 100%; max-width: 480px; padding: 20px 16px; }
-    header { margin-bottom: 20px; padding: 0 4px; display: flex; justify-content: space-between; align-items: baseline; }
+    header { margin-bottom: 20px; padding: 0 4px; display: flex; justify-content: space-between; align-items: center; }
     h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
     .date-badge { font-size: 13px; color: var(--text-sub); font-weight: 500; }
+    .lock-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px; }
     .section-title { font-size: 13px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 4px 10px 4px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
     .task-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(0,0,0,0.03); margin-bottom: 12px; overflow: hidden; }
     .task-main { padding: 14px 16px; display: flex; align-items: center; gap: 14px; }
@@ -74,13 +76,45 @@
     .btn-cancel { background: #F2F4F7; color: #475467; }
     .btn-submit { background: var(--primary); color: #FFF; }
     .loading-wrap { text-align: center; padding: 40px 0; color: var(--text-sub); }
+
+    /* ロック画面のスタイル */
+    #lockScreen {
+      position: fixed; inset: 0; background: #FFFFFF; z-index: 999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+    }
+    .lock-icon { font-size: 48px; margin-bottom: 16px; }
+    .lock-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .lock-sub { font-size: 14px; color: var(--text-sub); margin-bottom: 24px; }
+    .pin-input {
+      width: 180px; text-align: center; font-size: 32px; letter-spacing: 12px;
+      padding: 10px; border: 2px solid var(--border); border-radius: 16px; outline: none;
+      font-family: inherit; margin-bottom: 20px;
+    }
+    .pin-input:focus { border-color: var(--primary); }
+    .pin-btn {
+      width: 180px; padding: 14px; font-size: 16px; font-weight: 700;
+      background: var(--primary); color: #FFF; border: none; border-radius: 14px; cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <div id="app">
+
+  <!-- 暗証番号ロック画面 -->
+  <div id="lockScreen">
+    <div class="lock-icon">🔒</div>
+    <div class="lock-title">パスコードを入力</div>
+    <div class="lock-sub">4桁の暗証番号を入力してください</div>
+    <input type="password" id="pinInput" class="pin-input" maxlength="4" pattern="[0-9]*" inputmode="numeric" placeholder="••••">
+    <button class="pin-btn" onclick="unlockApp()">解除</button>
+  </div>
+
+  <div id="app" style="display: none;">
     <header>
       <h1>Today's Tasks</h1>
-      <span class="date-badge" id="todayLabel"></span>
+      <div class="header-right">
+        <span class="date-badge" id="todayLabel"></span>
+        <button class="lock-btn" onclick="lockApp()" title="再ロック">🔒</button>
+      </div>
     </header>
     <div id="loading" class="loading-wrap">データを読み込み中...</div>
     <div id="uncompletedList"></div>
@@ -93,7 +127,7 @@
     </div>
   </div>
 
-  <button class="fab" id="fabAdd">
+  <button class="fab" id="fabAdd" style="display: none;">
     <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
   </button>
 
@@ -122,36 +156,67 @@
   </div>
 
   <script>
-    // ★★★ ステップ1でコピーしたGASのURLをここに貼り付けてください ★★★
+    // ★★★ ステップ1でコピーしたGASのURLを貼り付けてください ★★★
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzQcM-lRySGUYsmMucwlgFSahz_-4tkoEvZ2SMncyJa7FgJQlG7L7AoKSKoM1gJSSCI/exec";
 
-    // Service Worker登録（アプリ化対応）
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js');
     }
 
+    let currentPin = '';
     let tasks = [];
     let showCompleted = false;
+
+    // 自動ログインチェック
+    window.onload = function() {
+      const savedPin = localStorage.getItem('task_pin');
+      if (savedPin) {
+        currentPin = savedPin;
+        loadTasksWithPin(savedPin);
+      } else {
+        document.getElementById('pinInput').focus();
+      }
+    };
+
+    function unlockApp() {
+      const pin = document.getElementById('pinInput').value.trim();
+      if (pin.length !== 4) {
+        alert('4桁の暗証番号を入力してください');
+        return;
+      }
+      currentPin = pin;
+      loadTasksWithPin(pin);
+    }
+
+    function loadTasksWithPin(pin) {
+      fetch(`${GAS_API_URL}?action=getTasks&pin=${pin}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            localStorage.setItem('task_pin', pin);
+            document.getElementById('lockScreen').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('fabAdd').style.display = 'flex';
+            document.getElementById('loading').style.display = 'none';
+            tasks = res.data;
+            renderTasks();
+          } else {
+            alert('暗証番号が間違っています');
+            document.getElementById('pinInput').value = '';
+            localStorage.removeItem('task_pin');
+          }
+        })
+        .catch(err => alert('通信エラー: ' + err));
+    }
+
+    function lockApp() {
+      localStorage.removeItem('task_pin');
+      location.reload();
+    }
 
     const today = new Date();
     document.getElementById('todayLabel').innerText = today.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', weekday: 'short' });
     document.getElementById('taskDateInput').value = today.toISOString().split('T')[0];
-
-    // 初回データ取得
-    window.onload = function() {
-      fetch(`${GAS_API_URL}?action=getTasks`)
-        .then(res => res.json())
-        .then(res => {
-          if (res.status === 'success') {
-            tasks = res.data;
-            document.getElementById('loading').style.display = 'none';
-            renderTasks();
-          } else {
-            alert('読み込み失敗: ' + res.message);
-          }
-        })
-        .catch(err => alert('通信エラー: ' + err));
-    };
 
     function renderTasks() {
       const uncompletedContainer = document.getElementById('uncompletedList');
@@ -224,8 +289,8 @@
     }
 
     function toggleSubtasks(parentId) {
-      const subContainer = document.getElementById(`sub-${parentId}`);
-      if (subContainer) subContainer.classList.toggle('expanded');
+      const sub = document.getElementById(`sub-${parentId}`);
+      if (sub) sub.classList.toggle('expanded');
     }
 
     function toggleTask(id) {
@@ -237,7 +302,7 @@
       fetch(GAS_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'updateTaskStatus', taskId: id, completed: target.completed })
+        body: JSON.stringify({ action: 'updateTaskStatus', pin: currentPin, taskId: id, completed: target.completed })
       }).catch(() => {
         target.completed = !target.completed;
         renderTasks();
@@ -281,7 +346,7 @@
       fetch(GAS_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'addTask', data: { title, parentId, date, priority } })
+        body: JSON.stringify({ action: 'addTask', pin: currentPin, data: { title, parentId, date, priority } })
       })
       .then(res => res.json())
       .then(res => {
