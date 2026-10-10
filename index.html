@@ -25,7 +25,7 @@
       --radius: 12px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif; min-height: 100vh; display: flex; justify-content: center; padding-bottom: 80px; }
+    body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif; min-height: 100vh; display: flex; justify-content: center; padding-bottom: 96px; }
     #app { width: 100%; max-width: 480px; padding: 0 12px 12px 12px; }
 
     .sticky-header {
@@ -50,12 +50,23 @@
     .task-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 7px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
     .task-main { padding: 8px 10px; display: flex; align-items: center; gap: 8px; }
     
-    /* ★改善1: つまみとチェックボタンの間隔を程よく調整 */
-    .drag-handle { color: #CBD5E1; cursor: grab; padding: 2px 0; margin-right: 3px; display: flex; align-items: center; justify-content: center; touch-action: none; }
+    .drag-handle {
+      color: #94A3B8;
+      cursor: grab;
+      padding: 8px 6px;
+      margin: -6px -2px -6px -4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+      user-select: none;
+    }
     .drag-handle:active { cursor: grabbing; color: var(--primary); }
-    .drag-handle svg { width: 16px; height: 16px; }
-    .sortable-ghost { opacity: 0.3; background: #E2E8F0; }
-    .sortable-chosen { box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+    .drag-handle svg { width: 16px; height: 16px; pointer-events: none; }
+
+    .sortable-ghost { opacity: 0.25; background: #CBD5E1 !important; border: 1px dashed var(--primary); }
+    .sortable-chosen { box-shadow: 0 12px 28px rgba(0,0,0,0.18) !important; transform: scale(1.02); z-index: 999; }
+    .sortable-fallback { opacity: 0.98 !important; transform: scale(1.03); box-shadow: 0 16px 36px rgba(0,0,0,0.22) !important; }
 
     .check-btn { width: 28px; height: 28px; min-width: 28px; border-radius: 50%; border: 2px solid #D0D5DD; background: #FAFAFA; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
     .check-btn svg { width: 13px; height: 13px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
@@ -81,6 +92,13 @@
     .task-card.is-done .task-title { color: var(--text-sub); text-decoration: line-through; }
     .task-memo-preview { font-size: 11px; color: var(--text-sub); margin-top: 1px; display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .task-meta { display: flex; align-items: center; gap: 5px; margin-top: 2px; font-size: 11px; color: var(--text-sub); flex-wrap: wrap; }
+    
+    /* ★今日/明日/遅延のスマートバッジ */
+    .date-tag { font-weight: 700; padding: 1px 6px; border-radius: 6px; font-size: 10.5px; display: inline-flex; align-items: center; }
+    .tag-today { background: #DCFCE7; color: #15803D; }    /* 今日：薄緑 */
+    .tag-tomorrow { background: #E0E7FF; color: #3730A3; } /* 明日：薄紫 */
+    .tag-overdue { background: #FEE2E2; color: #DC2626; }  /* 遅延：薄赤 */
+
     .subtask-badge { background: var(--primary-light); color: var(--primary); padding: 1px 6px; border-radius: 6px; font-weight: 600; font-size: 10px; }
     .repeat-badge { background: #F3E8FF; color: #7E22CE; padding: 1px 6px; border-radius: 6px; font-weight: 600; font-size: 10px; }
     .time-badge { background: #FEF3C7; color: #B45309; padding: 1px 6px; border-radius: 6px; font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 2px; }
@@ -118,10 +136,7 @@
     .form-group { margin-bottom: 10px; }
     .form-label { display: block; font-size: 11.5px; font-weight: 600; color: var(--text-sub); margin-bottom: 3px; }
     .input-text, .input-textarea { width: 100%; padding: 10px 12px; font-size: 14.5px; border-radius: 10px; border: 1px solid var(--border); background: #F9FAFB; outline: none; font-family: inherit; }
-    
-    /* ★改善2: メモ欄をゆったり拡大し、行間も読みやすく調整 */
     .input-textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
-    
     .form-row { display: flex; gap: 8px; }
     .form-row .form-group { flex: 1; }
     .sheet-actions { display: flex; gap: 8px; margin-top: 14px; }
@@ -210,7 +225,7 @@
 
       <div class="form-group">
         <label class="form-label">タスク名</label>
-        <input type="text" id="taskTitleInput" class="input-text" placeholder="何をしますか？">
+        <input type="text" id="taskTitleInput" class="input-text" placeholder="何をしますか？" autocomplete="off">
       </div>
 
       <div class="form-row" id="additionalFields">
@@ -300,13 +315,50 @@
         });
     }
 
+    // ★相対日付（今日/明日/遅延/MM/DD）の判定
+    function formatDisplayDate(dateStr) {
+      if (!dateStr) return '';
+      const parts = String(dateStr).trim().replace(/\//g, '-').split('-');
+      if (parts.length !== 3) return dateStr;
+
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const d = parseInt(parts[2], 10);
+      const taskDate = new Date(y, m, d);
+
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const diffDays = Math.round((taskDate - today) / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) {
+        return '<span class="date-tag tag-today">今日</span>';
+      } else if (diffDays === 1) {
+        return '<span class="date-tag tag-tomorrow">明日</span>';
+      } else if (diffDays < 0) {
+        return `<span class="date-tag tag-overdue">${parts[1]}/${parts[2]}</span>`;
+      } else {
+        const currentYear = String(today.getFullYear());
+        const dateText = parts[0] === currentYear ? `${parts[1]}/${parts[2]}` : `${parts[0]}/${parts[1]}/${parts[2]}`;
+        return `<span>${dateText}</span>`;
+      }
+    }
+
+    // ★滑らかなドラッグ操作（追従性・アニメーション・触覚フィードバック）
     function initSortable() {
       const container = document.getElementById('uncompletedList');
       sortableInstance = new Sortable(container, {
         handle: '.drag-handle',
-        animation: 180,
+        animation: 250,
+        easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+        forceFallback: true,
+        fallbackClass: 'sortable-fallback',
+        fallbackOnBody: true,
+        fallbackTolerance: 2,
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
+        onChoose: function() {
+          if (navigator.vibrate) navigator.vibrate(12);
+        },
         onEnd: function () {
           const cardElements = container.querySelectorAll('.task-card');
           const newOrderIds = Array.from(cardElements).map(el => el.getAttribute('data-id'));
@@ -394,6 +446,8 @@
       let timeBadgeHtml = task.time ? `<span class="time-badge">🕒 ${escapeHtml(task.time)}</span>` : '';
       let memoPreviewHtml = task.memo ? `<div class="task-memo-preview">📝 ${escapeHtml(task.memo)}</div>` : '';
 
+      const displayDateHtml = formatDisplayDate(task.date);
+
       const dragHandleHtml = !task.completed ? `
         <div class="drag-handle" title="ドラッグして並び替え">
           <svg viewBox="0 0 24 24" fill="currentColor">
@@ -414,7 +468,7 @@
             <div class="task-title" title="${escapeHtml(task.title)}">${escapeHtml(task.title)}</div>
             ${memoPreviewHtml}
             <div class="task-meta">
-              <span>${task.date || ''}</span>
+              ${displayDateHtml}
               ${timeBadgeHtml}
               ${repeatBadgeHtml}
               ${subBadgeHtml}
@@ -481,7 +535,6 @@
     const memoField = document.getElementById('memoField');
     const btnDelete = document.getElementById('btnDelete');
 
-    // ★改善3: 薄い黒の背景（オーバーレイ）をタップした時にモーダルを閉じる
     modal.addEventListener('click', function(e) {
       if (e.target === modal) {
         modal.classList.remove('active');
