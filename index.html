@@ -128,7 +128,7 @@
         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
       </svg>
     </div>
-    <div class="lock-title">チェックリスト</div>
+    <div class="lock-title">認証画面</div>
     <div class="lock-sub">4桁の暗証番号を入力してください</div>
     <input type="password" id="pinInput" class="pin-input" maxlength="4" pattern="[0-9]*" inputmode="numeric" placeholder="••••">
     <button class="pin-btn" onclick="unlockApp()">解除</button>
@@ -136,7 +136,7 @@
 
   <div id="app" style="display: none;">
     <header>
-      <h1>チェックリスト</h1>
+      <h1>Today's Task</h1>
       <div class="header-right">
         <span class="date-badge" id="todayLabel"></span>
         <button class="lock-btn" onclick="lockApp()" title="再ロック">
