@@ -371,4 +371,44 @@
     }
   </script>
 </body>
+  <!-- アイコン自動生成ツール（後で消してOK） -->
+<div style="position:fixed;top:10px;left:10px;z-index:99999;background:#fff;padding:12px;border:2px solid #000;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+  <p style="font-size:12px;font-weight:bold;margin-bottom:8px;color:#000;">アイコンをダウンロード</p>
+  <button onclick="downloadIcon(192)" style="padding:6px 10px;margin-right:6px;font-weight:bold;cursor:pointer;">192px 保存</button>
+  <button onclick="downloadIcon(512)" style="padding:6px 10px;font-weight:bold;cursor:pointer;">512px 保存</button>
+</div>
+<script>
+function downloadIcon(size) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // 白背景の角丸四角形
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, size, size);
+
+  // 黒の円形ベース
+  ctx.fillStyle = '#111827';
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size * 0.42, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 白のチェックマーク
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = size * 0.08;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(size * 0.32, size * 0.50);
+  ctx.lineTo(size * 0.45, size * 0.63);
+  ctx.lineTo(size * 0.68, size * 0.38);
+  ctx.stroke();
+
+  const a = document.createElement('a');
+  a.download = `icon-${size}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+</script>
 </html>
