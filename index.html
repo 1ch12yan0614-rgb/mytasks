@@ -192,6 +192,7 @@
     .btn-submit { background: var(--primary); color: #FFF; }
     .btn-delete { background: #FEE2E2; color: #DC2626; flex: 0.6; }
 
+    /* デイリーメモ */
     .daily-note-container { display: flex; flex-direction: column; gap: 14px; }
     .today-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
     .today-note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
@@ -205,6 +206,33 @@
     .past-note-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
     .past-note-date { font-size: 13.5px; font-weight: 700; color: var(--text-main); }
     .past-note-body { margin-top: 8px; font-size: 13px; line-height: 1.55; color: #374151; white-space: pre-wrap; word-break: break-word; border-top: 1px dashed var(--border); padding-top: 6px; }
+
+    /* カレンダー画面 */
+    .cal-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 12px; }
+    .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .cal-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .cal-nav-btn { background: none; border: 1px solid var(--border); border-radius: 8px; width: 30px; height: 30px; font-size: 14px; cursor: pointer; color: var(--text-main); display: flex; align-items: center; justify-content: center; }
+    .cal-today-btn { background: var(--primary-light); color: var(--primary); border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+    .cal-day-label { font-size: 11px; font-weight: 700; color: var(--text-sub); padding: 4px 0; }
+    .cal-day-label.sun { color: #DC2626; }
+    .cal-day-label.sat { color: #2563EB; }
+
+    .cal-cell { position: relative; height: 38px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .cal-cell.other-month { opacity: 0.25; }
+    .cal-cell.is-today { border: 1.5px solid var(--primary); }
+    .cal-cell.is-selected { background: var(--primary) !important; color: #FFF !important; }
+    .cal-cell .dot { width: 4px; height: 4px; border-radius: 50%; background: #EA580C; margin-top: 1px; }
+    .cal-cell.is-selected .dot { background: #FFF; }
+
+    .events-header { display: flex; justify-content: space-between; align-items: center; margin: 12px 4px 8px 4px; }
+    .events-title { font-size: 13px; font-weight: 700; color: var(--text-sub); }
+    .event-card { background: var(--card-bg); border-radius: var(--radius); padding: 11px 14px; margin-bottom: 7px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; cursor: pointer; border-left: 4px solid var(--primary); }
+    .event-time-badge { font-size: 11.5px; font-weight: 700; color: var(--primary); min-width: 82px; }
+    .event-main { flex: 1; min-width: 0; }
+    .event-title { font-size: 14px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .event-memo { font-size: 11px; color: var(--text-sub); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
     .hidden { display: none !important; }
     .loading-wrap { text-align: center; padding: 30px 0; color: var(--text-sub); font-size: 13px; }
@@ -225,11 +253,13 @@
       <div class="tab-bar">
         <button class="tab-btn active" id="tabTasks" onclick="switchTab('tasks')">タスク</button>
         <button class="tab-btn" id="tabNotes" onclick="switchTab('notes')">デイリーメモ</button>
+        <button class="tab-btn" id="tabCalendar" onclick="switchTab('calendar')">カレンダー</button>
       </div>
     </div>
 
     <div id="loading" class="loading-wrap">データを読み込み中...</div>
 
+    <!-- タスク画面 -->
     <div id="tasksView">
       <div id="uncompletedList"></div>
       <div id="completedSection" style="display: none;">
@@ -241,6 +271,7 @@
       </div>
     </div>
 
+    <!-- デイリーメモ画面 -->
     <div id="notesView" style="display: none;">
       <div class="daily-note-container">
         <div class="today-note-card">
@@ -258,12 +289,42 @@
         <div id="pastNotesList"></div>
       </div>
     </div>
+
+    <!-- カレンダー画面 -->
+    <div id="calendarView" style="display: none;">
+      <div class="cal-card">
+        <div class="cal-header">
+          <div class="cal-title" id="calMonthTitle">2026年 10月</div>
+          <div style="display: flex; gap: 6px;">
+            <button class="cal-today-btn" onclick="goToToday()">今日</button>
+            <button class="cal-nav-btn" onclick="changeMonth(-1)">◀</button>
+            <button class="cal-nav-btn" onclick="changeMonth(1)">▶</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calDaysHeader">
+          <div class="cal-day-label sun">日</div>
+          <div class="cal-day-label">月</div>
+          <div class="cal-day-label">火</div>
+          <div class="cal-day-label">水</div>
+          <div class="cal-day-label">木</div>
+          <div class="cal-day-label">金</div>
+          <div class="cal-day-label sat">土</div>
+        </div>
+        <div class="cal-grid" id="calGrid" style="margin-top: 4px;"></div>
+      </div>
+
+      <div class="events-header">
+        <span class="events-title" id="selectedDateTitle">今日の予定</span>
+      </div>
+      <div id="selectedEventsList"></div>
+    </div>
   </div>
 
   <button class="fab" id="fabAdd">
     <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
   </button>
 
+  <!-- タスク用モーダル -->
   <div class="modal-overlay" id="taskModal">
     <div class="modal-sheet">
       <div class="sheet-title" id="modalTitle">新しいタスク</div>
@@ -341,10 +402,51 @@
     </div>
   </div>
 
+  <!-- 予定用モーダル -->
+  <div class="modal-overlay" id="eventModal">
+    <div class="modal-sheet">
+      <div class="sheet-title" id="eventModalTitle">新しい予定</div>
+      <input type="hidden" id="eventIdInput">
+
+      <div class="form-group">
+        <label class="form-label">予定名</label>
+        <input type="text" id="eventTitleInput" class="input-text" placeholder="例: ミーティング、来客対応" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">日付</label>
+        <input type="date" id="eventDateInput" class="input-text">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">開始時間</label>
+          <input type="time" id="eventStartTimeInput" class="input-text">
+        </div>
+        <div class="form-group">
+          <label class="form-label">終了時間</label>
+          <input type="time" id="eventEndTimeInput" class="input-text">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">メモ（任意）</label>
+        <textarea id="eventMemoInput" class="input-textarea" style="min-height: 80px;" placeholder="場所や詳細を入力"></textarea>
+      </div>
+
+      <div class="sheet-actions">
+        <button class="btn btn-delete" id="btnEventDelete" style="display: none;">削除</button>
+        <button class="btn btn-cancel" id="btnEventCancel">閉じる</button>
+        <button class="btn btn-submit" id="btnEventSave">保存</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzQcM-lRySGUYsmMucwlgFSahz_-4tkoEvZ2SMncyJa7FgJQlG7L7AoKSKoM1gJSSCI/exec";
-    const CACHE_TASKS_KEY = 'todo_tasks_cache_v1';
-    const CACHE_NOTES_KEY = 'todo_notes_cache_v1';
+    const CACHE_TASKS_KEY = 'todo_tasks_cache_v2';
+    const CACHE_NOTES_KEY = 'todo_notes_cache_v2';
+    const CACHE_EVENTS_KEY = 'todo_events_cache_v2';
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js');
@@ -352,11 +454,21 @@
 
     let tasks = [];
     let dailyNotes = [];
+    let events = [];
     let showCompleted = false;
     let currentTab = 'tasks';
     let sortableInstance = null;
     let noteSaveTimeout = null;
     let expandedTaskIds = new Set();
+
+    // カレンダー状態
+    let currentCalDate = new Date();
+    let selectedCalDateStr = '';
+
+    // オートスクロール用
+    let isDragging = false;
+    let autoScrollTimer = null;
+    let currentTouchY = 0;
 
     function getLocalDateString(d = new Date()) {
       const year = d.getFullYear();
@@ -367,35 +479,48 @@
 
     const todayObj = new Date();
     const todayStr = getLocalDateString(todayObj);
+    selectedCalDateStr = todayStr;
 
     window.onload = function() {
-      initCachedData(); // 【超高速化】開いた瞬間にキャッシュを即時描画
-      loadAllData();     // 裏で最新データを取得＆静かに同期
+      initCachedData();
+      loadAllData();
       initSortable();
       initAutoSaveNote();
       initKeyboardSubmit();
+      renderCalendar();
     };
+
+    window.addEventListener('touchmove', function(e) {
+      if (isDragging && e.touches.length > 0) {
+        currentTouchY = e.touches[0].clientY;
+      }
+    }, { passive: true });
 
     function saveLocalCache() {
       try {
         localStorage.setItem(CACHE_TASKS_KEY, JSON.stringify(tasks));
         localStorage.setItem(CACHE_NOTES_KEY, JSON.stringify(dailyNotes));
+        localStorage.setItem(CACHE_EVENTS_KEY, JSON.stringify(events));
       } catch (e) {}
     }
 
-    // 起動0.05秒で表示する処理
     function initCachedData() {
       try {
-        const cachedTasks = localStorage.getItem(CACHE_TASKS_KEY);
-        const cachedNotes = localStorage.getItem(CACHE_NOTES_KEY);
-        if (cachedTasks) {
-          tasks = JSON.parse(cachedTasks);
+        const ct = localStorage.getItem(CACHE_TASKS_KEY);
+        const cn = localStorage.getItem(CACHE_NOTES_KEY);
+        const ce = localStorage.getItem(CACHE_EVENTS_KEY);
+        if (ct) {
+          tasks = JSON.parse(ct);
           renderTasks();
           document.getElementById('loading').style.display = 'none';
         }
-        if (cachedNotes) {
-          dailyNotes = JSON.parse(cachedNotes);
+        if (cn) {
+          dailyNotes = JSON.parse(cn);
           renderDailyNotes();
+        }
+        if (ce) {
+          events = JSON.parse(ce);
+          renderCalendar();
         }
       } catch (e) {
         console.warn('キャッシュ復元エラー:', e);
@@ -405,7 +530,7 @@
     function loadAllData() {
       const syncBadge = document.getElementById('syncBadge');
       if (tasks.length > 0) {
-        syncBadge.style.display = 'inline-block'; // キャッシュ表示中は控えめに「同期中…」
+        syncBadge.style.display = 'inline-block';
       }
 
       fetch(`${GAS_API_URL}?action=getAllData`)
@@ -416,9 +541,11 @@
           if (res.status === 'success') {
             tasks = res.tasks || [];
             dailyNotes = res.dailyNotes || [];
-            saveLocalCache(); // ローカルキャッシュを最新化
+            events = res.events || [];
+            saveLocalCache();
             renderTasks();
             renderDailyNotes();
+            renderCalendar();
           } else if (tasks.length === 0) {
             document.getElementById('loading').innerText = 'データの読み込みに失敗しました';
             document.getElementById('loading').style.display = 'block';
@@ -461,6 +588,26 @@
       }
     }
 
+    // 等速オートスクロール
+    function startAutoScroll() {
+      const topEdge = 130;
+      const bottomEdge = 120;
+      const scrollSpeed = 8;
+
+      function scrollLoop() {
+        if (!isDragging) return;
+        const viewportHeight = window.innerHeight;
+
+        if (currentTouchY > 0 && currentTouchY < topEdge) {
+          window.scrollBy(0, -scrollSpeed);
+        } else if (currentTouchY > viewportHeight - bottomEdge) {
+          window.scrollBy(0, scrollSpeed);
+        }
+        autoScrollTimer = requestAnimationFrame(scrollLoop);
+      }
+      autoScrollTimer = requestAnimationFrame(scrollLoop);
+    }
+
     function initSortable() {
       const container = document.getElementById('uncompletedList');
       sortableInstance = new Sortable(container, {
@@ -474,10 +621,27 @@
         fallbackOnBody: true,
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
+        scroll: true,
+        scrollSensitivity: 120,
+        scrollSpeed: 20,
+        bubbleScroll: true,
         onChoose: function() {
           if (navigator.vibrate) navigator.vibrate(20);
         },
+        onStart: function(evt) {
+          isDragging = true;
+          if (evt.originalEvent && evt.originalEvent.touches && evt.originalEvent.touches.length > 0) {
+            currentTouchY = evt.originalEvent.touches[0].clientY;
+          }
+          startAutoScroll();
+        },
         onEnd: function () {
+          isDragging = false;
+          if (autoScrollTimer) {
+            cancelAnimationFrame(autoScrollTimer);
+            autoScrollTimer = null;
+          }
+
           const cardElements = container.querySelectorAll('.task-card');
           const newOrderIds = Array.from(cardElements).map(el => el.getAttribute('data-id'));
 
@@ -505,18 +669,23 @@
 
     function switchTab(tab) {
       currentTab = tab;
-      if (tab === 'tasks') {
-        document.getElementById('tabTasks').classList.add('active');
-        document.getElementById('tabNotes').classList.remove('active');
-        document.getElementById('tasksView').style.display = 'block';
-        document.getElementById('notesView').style.display = 'none';
-        document.getElementById('fabAdd').style.display = 'flex';
+      document.getElementById('tabTasks').classList.toggle('active', tab === 'tasks');
+      document.getElementById('tabNotes').classList.toggle('active', tab === 'notes');
+      document.getElementById('tabCalendar').classList.toggle('active', tab === 'calendar');
+
+      document.getElementById('tasksView').style.display = (tab === 'tasks') ? 'block' : 'none';
+      document.getElementById('notesView').style.display = (tab === 'notes') ? 'block' : 'none';
+      document.getElementById('calendarView').style.display = (tab === 'calendar') ? 'block' : 'none';
+
+      const fab = document.getElementById('fabAdd');
+      if (tab === 'notes') {
+        fab.style.display = 'none';
       } else {
-        document.getElementById('tabTasks').classList.remove('active');
-        document.getElementById('tabNotes').classList.add('active');
-        document.getElementById('tasksView').style.display = 'none';
-        document.getElementById('notesView').style.display = 'block';
-        document.getElementById('fabAdd').style.display = 'none';
+        fab.style.display = 'flex';
+      }
+
+      if (tab === 'calendar') {
+        renderCalendar();
       }
     }
 
@@ -683,9 +852,7 @@
     const btnDelete = document.getElementById('btnDelete');
 
     modal.addEventListener('click', function(e) {
-      if (e.target === modal) {
-        modal.classList.remove('active');
-      }
+      if (e.target === modal) modal.classList.remove('active');
     });
 
     function initKeyboardSubmit() {
@@ -695,9 +862,23 @@
           document.getElementById('btnSave').click();
         }
       });
+      document.getElementById('eventTitleInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.isComposing) {
+          e.preventDefault();
+          document.getElementById('btnEventSave').click();
+        }
+      });
     }
 
     document.getElementById('fabAdd').onclick = function() {
+      if (currentTab === 'calendar') {
+        openAddEventModal();
+      } else {
+        openAddTaskModal();
+      }
+    };
+
+    function openAddTaskModal() {
       document.getElementById('modalTitle').innerText = '新しいタスク';
       taskIdInput.value = '';
       parentIdInput.value = '';
@@ -714,7 +895,7 @@
       btnDelete.style.display = 'none';
       modal.classList.add('active');
       setTimeout(() => titleInput.focus(), 50);
-    };
+    }
 
     function openAddSubtaskModal(parentId) {
       document.getElementById('modalTitle').innerText = 'サブタスクを追加';
@@ -822,10 +1003,38 @@
           isDeleted: false
         };
 
-        tasks.push(newTask);
-        
         if (parentId) {
+          tasks.push(newTask);
           expandedTaskIds.add(parentId);
+        } else {
+          // 【優先度に応じた挿入位置の自動制御】
+          const pVal = parseInt(priority, 10);
+          let insertIndex = -1;
+
+          // 未完了タスクの中で、同じ優先度またはそれより高い優先度のタスクの末尾を探す
+          for (let i = 0; i < tasks.length; i++) {
+            if (!tasks[i].parentId && !tasks[i].completed) {
+              const curP = parseInt(tasks[i].priority || '3', 10);
+              if (curP <= pVal) {
+                insertIndex = i + 1; // 該当優先度グループの末尾候補
+              }
+            }
+          }
+
+          if (insertIndex >= 0) {
+            tasks.splice(insertIndex, 0, newTask);
+          } else {
+            // リストの先頭に挿入
+            const firstUncompleted = tasks.findIndex(t => !t.parentId && !t.completed);
+            if (firstUncompleted >= 0) {
+              tasks.splice(firstUncompleted, 0, newTask);
+            } else {
+              tasks.push(newTask);
+            }
+          }
+
+          // 【2つの重要タスクの固定配置ルール適用】
+          enforceRoutineOrder();
         }
 
         saveLocalCache();
@@ -838,6 +1047,30 @@
         }).catch(err => console.error('保存エラー:', err));
       }
     };
+
+    // 『作業内容・指示確認』と『ケース記録記入』の固定順序を保証する関数
+    function enforceRoutineOrder() {
+      const topTaskIdx = tasks.findIndex(t => !t.parentId && !t.completed && (t.title.includes('作業内容') || t.title.includes('指示確認')));
+      if (topTaskIdx > 0) {
+        const [topTask] = tasks.splice(topTaskIdx, 1);
+        tasks.unshift(topTask); // 全体の一番上
+      }
+
+      const bottomTaskIdx = tasks.findIndex(t => !t.parentId && !t.completed && t.title.includes('ケース記録'));
+      if (bottomTaskIdx >= 0) {
+        const [bottomTask] = tasks.splice(bottomTaskIdx, 1);
+        // 優先度1グループの末尾（優先度2以上の直前）を探す
+        let p1LastIdx = 0;
+        for (let i = 0; i < tasks.length; i++) {
+          if (!tasks[i].parentId && !tasks[i].completed) {
+            if (String(tasks[i].priority) === '1') {
+              p1LastIdx = i + 1;
+            }
+          }
+        }
+        tasks.splice(p1LastIdx, 0, bottomTask);
+      }
+    }
 
     btnDelete.onclick = function() {
       const id = taskIdInput.value;
@@ -856,6 +1089,7 @@
       });
     };
 
+    // デイリーメモ自動保存
     function initAutoSaveNote() {
       const noteInput = document.getElementById('todayNoteInput');
       const statusLabel = document.getElementById('noteStatusLabel');
@@ -953,6 +1187,211 @@
     document.getElementById('completedToggle').onclick = () => {
       showCompleted = !showCompleted;
       renderTasks();
+    };
+
+    // ==========================================
+    // カレンダーUI機能
+    // ==========================================
+
+    function changeMonth(delta) {
+      currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+      renderCalendar();
+    }
+
+    function goToToday() {
+      currentCalDate = new Date();
+      selectedCalDateStr = todayStr;
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const year = currentCalDate.getFullYear();
+      const month = currentCalDate.getMonth(); // 0-11
+      document.getElementById('calMonthTitle').innerText = `${year}年 ${month + 1}月`;
+
+      const grid = document.getElementById('calGrid');
+      grid.innerHTML = '';
+
+      const firstDayOfMonth = new Date(year, month, 1);
+      const startDay = firstDayOfMonth.getDay(); // 0(日) - 6(土)
+      const lastDateOfMonth = new Date(year, month + 1, 0).getDate();
+      const lastDateOfPrevMonth = new Date(year, month, 0).getDate();
+
+      // 前月の埋め草
+      for (let i = startDay - 1; i >= 0; i--) {
+        const d = lastDateOfPrevMonth - i;
+        const cell = document.createElement('div');
+        cell.className = 'cal-cell other-month';
+        cell.innerText = d;
+        grid.appendChild(cell);
+      }
+
+      // 当月の日付
+      for (let day = 1; day <= lastDateOfMonth; day++) {
+        const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isToday = (dStr === todayStr);
+        const isSelected = (dStr === selectedCalDateStr);
+
+        // 予定があるか判定
+        const hasEvent = events.some(e => e.date === dStr && !e.isDeleted);
+
+        const cell = document.createElement('div');
+        cell.className = `cal-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}`;
+        cell.innerHTML = `<span>${day}</span>${hasEvent ? '<div class="dot"></div>' : ''}`;
+        cell.onclick = () => {
+          selectedCalDateStr = dStr;
+          renderCalendar();
+        };
+        grid.appendChild(cell);
+      }
+
+      renderSelectedDayEvents();
+    }
+
+    function renderSelectedDayEvents() {
+      const titleEl = document.getElementById('selectedDateTitle');
+      const listEl = document.getElementById('selectedEventsList');
+      listEl.innerHTML = '';
+
+      if (selectedCalDateStr === todayStr) {
+        titleEl.innerText = `今日の予定 (${selectedCalDateStr})`;
+      } else {
+        titleEl.innerText = `${selectedCalDateStr} の予定`;
+      }
+
+      const dayEvents = events
+        .filter(e => e.date === selectedCalDateStr && !e.isDeleted)
+        .sort((a, b) => (a.startTime || '99:99').localeCompare(b.startTime || '99:99'));
+
+      if (dayEvents.length === 0) {
+        listEl.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center; padding:20px;">予定はありません</div>';
+        return;
+      }
+
+      dayEvents.forEach(ev => {
+        const card = document.createElement('div');
+        card.className = 'event-card';
+        card.onclick = () => openEditEventModal(ev.id);
+
+        let timeText = '時間指定なし';
+        if (ev.startTime && ev.endTime) {
+          timeText = `${ev.startTime} - ${ev.endTime}`;
+        } else if (ev.startTime) {
+          timeText = `${ev.startTime} 〜`;
+        }
+
+        card.innerHTML = `
+          <div class="event-time-badge">${timeText}</div>
+          <div class="event-main">
+            <div class="event-title">${escapeHtml(ev.title)}</div>
+            ${ev.memo ? `<div class="event-memo">📝 ${escapeHtml(ev.memo)}</div>` : ''}
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    // 予定モーダル制御
+    const eventModal = document.getElementById('eventModal');
+    const eventIdInput = document.getElementById('eventIdInput');
+    const eventTitleInput = document.getElementById('eventTitleInput');
+    const eventDateInput = document.getElementById('eventDateInput');
+    const eventStartTimeInput = document.getElementById('eventStartTimeInput');
+    const eventEndTimeInput = document.getElementById('eventEndTimeInput');
+    const eventMemoInput = document.getElementById('eventMemoInput');
+    const btnEventDelete = document.getElementById('btnEventDelete');
+
+    eventModal.addEventListener('click', function(e) {
+      if (e.target === eventModal) eventModal.classList.remove('active');
+    });
+
+    document.getElementById('btnEventCancel').onclick = () => eventModal.classList.remove('active');
+
+    function openAddEventModal() {
+      document.getElementById('eventModalTitle').innerText = '新しい予定';
+      eventIdInput.value = '';
+      eventTitleInput.value = '';
+      eventDateInput.value = selectedCalDateStr || todayStr;
+      eventStartTimeInput.value = '';
+      eventEndTimeInput.value = '';
+      eventMemoInput.value = '';
+      btnEventDelete.style.display = 'none';
+      eventModal.classList.add('active');
+      setTimeout(() => eventTitleInput.focus(), 50);
+    }
+
+    function openEditEventModal(id) {
+      const ev = events.find(e => e.id === id);
+      if (!ev) return;
+
+      document.getElementById('eventModalTitle').innerText = '予定を編集';
+      eventIdInput.value = ev.id;
+      eventTitleInput.value = ev.title;
+      eventDateInput.value = ev.date;
+      eventStartTimeInput.value = ev.startTime || '';
+      eventEndTimeInput.value = ev.endTime || '';
+      eventMemoInput.value = ev.memo || '';
+      btnEventDelete.style.display = 'block';
+      eventModal.classList.add('active');
+    }
+
+    document.getElementById('btnEventSave').onclick = function() {
+      const title = eventTitleInput.value.trim();
+      if (!title) return;
+      const id = eventIdInput.value;
+      const date = eventDateInput.value;
+      const startTime = eventStartTimeInput.value;
+      const endTime = eventEndTimeInput.value;
+      const memo = eventMemoInput.value.trim();
+
+      eventModal.classList.remove('active');
+
+      if (id) {
+        const ev = events.find(e => e.id === id);
+        if (ev) {
+          ev.title = title;
+          ev.date = date;
+          ev.startTime = startTime;
+          ev.endTime = endTime;
+          ev.memo = memo;
+          saveLocalCache();
+          renderCalendar();
+        }
+
+        fetch(GAS_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'updateEvent', data: { id, date, startTime, endTime, title, memo } })
+        });
+      } else {
+        const newId = 'event_' + Date.now();
+        const newEvent = { id: newId, date, startTime, endTime, title, memo, isDeleted: false };
+        events.push(newEvent);
+        saveLocalCache();
+        renderCalendar();
+
+        fetch(GAS_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'addEvent', data: newEvent })
+        }).catch(err => console.error('予定保存エラー:', err));
+      }
+    };
+
+    btnEventDelete.onclick = function() {
+      const id = eventIdInput.value;
+      if (!id || !confirm('この予定を削除しますか？')) return;
+
+      eventModal.classList.remove('active');
+      events = events.filter(e => e.id !== id);
+      saveLocalCache();
+      renderCalendar();
+
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'deleteEvent', eventId: id })
+      });
     };
 
     function escapeHtml(str) {
