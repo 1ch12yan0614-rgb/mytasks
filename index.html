@@ -23,10 +23,6 @@
       --primary-light: #EEF2FF;
       --border: #E6E8EC;
       --radius: 12px;
-      --color-sun: #DC2626;
-      --color-sat: #2563EB;
-      --event-highlight: #FFF7ED;
-      --event-border: #FDBA74;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif; min-height: 100vh; display: flex; justify-content: center; padding-bottom: 96px; }
@@ -113,7 +109,7 @@
 
     .subtask-badge { background: var(--primary-light); color: var(--primary); padding: 1px 6px; border-radius: 6px; font-weight: 600; font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
     .repeat-badge { background: #F3E8FF; color: #7E22CE; padding: 1px 6px; border-radius: 6px; font-weight: 600; font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
-    .time-badge { background: #FEF3C7; color: #B45309; padding: 1px 6px; border-radius: 7px; font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
+    .time-badge { background: #FEF3C7; color: #B45309; padding: 1px 6px; border-radius: 6px; font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
 
     .meta-badge-icon {
       width: 10.5px;
@@ -220,65 +216,60 @@
     
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
     .cal-day-label { font-size: 11px; font-weight: 700; color: var(--text-sub); padding: 4px 0; }
-    .cal-day-label.sun { color: var(--color-sun); }
-    .cal-day-label.sat { color: var(--color-sat); }
+    .cal-day-label.sun { color: #DC2626; }
+    .cal-day-label.sat { color: #2563EB; }
 
-    /* カレンダーセル */
     .cal-cell {
       position: relative;
-      height: 44px;
+      height: 42px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding-top: 4px;
+      justify-content: center;
       border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
       font-weight: 600;
-      transition: background 0.15s;
+      border: 1px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
     }
     .cal-cell.other-month { opacity: 0.25; }
     
-    /* 曜日・祝日カラー */
-    .cal-cell.is-sunday, .cal-cell.is-holiday { color: var(--color-sun); }
-    .cal-cell.is-saturday { color: var(--color-sat); }
+    /* 日にちの曜日・祝日色 */
+    .cal-cell.is-sat { color: #2563EB; }
+    .cal-cell.is-sun,
+    .cal-cell.is-holiday { color: #DC2626; }
 
-    /* 予定がある日のハイライト（案A） */
+    /* 予定がある日の薄オレンジ枠と背景 */
     .cal-cell.has-event {
-      background: var(--event-highlight);
-      border: 1px solid var(--event-border);
+      background-color: #FFF7ED;
+      border-color: #FDBA74;
     }
 
-    .cal-cell.is-today { border: 1.5px solid var(--primary); }
-    
+    /* 今日のハイライト */
+    .cal-cell.is-today {
+      border: 1.5px solid var(--primary) !important;
+    }
+
+    /* 選択中のセル */
     .cal-cell.is-selected {
       background: var(--primary) !important;
       color: #FFF !important;
-      border: none !important;
+      border-color: var(--primary) !important;
     }
 
-    /* 予定インジケーター（案B: バー ＆ 件数バッジ） */
-    .cal-event-indicator {
-      margin-top: 3px;
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-    .cal-event-bar {
-      width: 14px;
+    /* 予定がある日のオレンジ横線 */
+    .cal-cell .event-bar {
+      width: 18px;
       height: 3px;
       border-radius: 2px;
       background: #EA580C;
+      margin-top: 2px;
+      flex-shrink: 0;
     }
-    .cal-event-count {
-      font-size: 9.5px;
-      font-weight: 700;
-      color: #EA580C;
-      line-height: 1;
+    .cal-cell.is-selected .event-bar {
+      background: #FFFFFF !important;
     }
-    .cal-cell.is-selected .cal-event-bar { background: #FFF; }
-    .cal-cell.is-selected .cal-event-count { color: #FFF; }
 
     .events-header { display: flex; justify-content: space-between; align-items: center; margin: 12px 4px 8px 4px; }
     .events-title { font-size: 13px; font-weight: 700; color: var(--text-sub); }
@@ -311,7 +302,7 @@
       </div>
     </div>
 
-    <div id="loading" class="loading-wrap" style="display: none;">データを読み込み中...</div>
+    <div id="loading" class="loading-wrap">データを読み込み中...</div>
 
     <!-- タスク画面 -->
     <div id="tasksView">
@@ -348,7 +339,7 @@
     <div id="calendarView" style="display: none;">
       <div class="cal-card">
         <div class="cal-header">
-          <div class="cal-title" id="calMonthTitle"></div>
+          <div class="cal-title" id="calMonthTitle">2026年 10月</div>
           <div style="display: flex; gap: 6px;">
             <button class="cal-today-btn" onclick="goToToday()">今日</button>
             <button class="cal-nav-btn" onclick="changeMonth(-1)">◀</button>
@@ -398,9 +389,25 @@
         <div class="form-group">
           <label class="form-label">時間（任意）</label>
           <div class="time-picker-wrap">
-            <select id="taskTimeHour" class="input-text"></select>
+            <select id="taskTimeHour" class="input-text">
+              <option value="">--時</option>
+              <option value="00">00</option><option value="01">01</option><option value="02">02</option>
+              <option value="03">03</option><option value="04">04</option><option value="05">05</option>
+              <option value="06">06</option><option value="07">07</option><option value="08">08</option>
+              <option value="09">09</option><option value="10">10</option><option value="11">11</option>
+              <option value="12">12</option><option value="13">13</option><option value="14">14</option>
+              <option value="15">15</option><option value="16">16</option><option value="17">17</option>
+              <option value="18">18</option><option value="19">19</option><option value="20">20</option>
+              <option value="21">21</option><option value="22">22</option><option value="23">23</option>
+            </select>
             <span class="time-colon">:</span>
-            <select id="taskTimeMinute" class="input-text"></select>
+            <select id="taskTimeMinute" class="input-text">
+              <option value="">--分</option>
+              <option value="00">00</option><option value="05">05</option><option value="10">10</option>
+              <option value="15">15</option><option value="20">20</option><option value="25">25</option>
+              <option value="30">30</option><option value="35">35</option><option value="40">40</option>
+              <option value="45">45</option><option value="50">50</option><option value="55">55</option>
+            </select>
           </div>
         </div>
       </div>
@@ -459,19 +466,11 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">開始時間</label>
-          <div class="time-picker-wrap">
-            <select id="eventStartHour" class="input-text"></select>
-            <span class="time-colon">:</span>
-            <select id="eventStartMinute" class="input-text"></select>
-          </div>
+          <input type="time" id="eventStartTimeInput" class="input-text">
         </div>
         <div class="form-group">
           <label class="form-label">終了時間</label>
-          <div class="time-picker-wrap">
-            <select id="eventEndHour" class="input-text"></select>
-            <span class="time-colon">:</span>
-            <select id="eventEndMinute" class="input-text"></select>
-          </div>
+          <input type="time" id="eventEndTimeInput" class="input-text">
         </div>
       </div>
 
@@ -493,7 +492,6 @@
     const CACHE_TASKS_KEY = 'todo_tasks_cache_v2';
     const CACHE_NOTES_KEY = 'todo_notes_cache_v2';
     const CACHE_EVENTS_KEY = 'todo_events_cache_v2';
-    const CACHE_HOLIDAYS_KEY = 'todo_holidays_cache_v1';
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js');
@@ -502,7 +500,6 @@
     let tasks = [];
     let dailyNotes = [];
     let events = [];
-    let holidays = {};
     let showCompleted = false;
     let currentTab = 'tasks';
     let sortableInstance = null;
@@ -527,52 +524,8 @@
     const todayStr = getLocalDateString(todayObj);
     selectedCalDateStr = todayStr;
 
-    // 時間セレクトボックスの選択肢を高速動的生成
-    function populateTimeOptions(hourEl, minEl) {
-      let hHtml = '<option value="">--時</option>';
-      for (let i = 0; i < 24; i++) {
-        const val = String(i).padStart(2, '0');
-        hHtml += `<option value="${val}">${val}</option>`;
-      }
-      hourEl.innerHTML = hHtml;
-
-      let mHtml = '<option value="">--分</option>';
-      for (let i = 0; i < 60; i += 5) {
-        const val = String(i).padStart(2, '0');
-        mHtml += `<option value="${val}">${val}</option>`;
-      }
-      minEl.innerHTML = mHtml;
-    }
-
-    // 【即時実行】最速でキャッシュ復元＆描画（チラつき・待機感ゼロ化）
-    (function initCachedData() {
-      try {
-        const ct = localStorage.getItem(CACHE_TASKS_KEY);
-        const cn = localStorage.getItem(CACHE_NOTES_KEY);
-        const ce = localStorage.getItem(CACHE_EVENTS_KEY);
-        const ch = localStorage.getItem(CACHE_HOLIDAYS_KEY);
-        if (ct) tasks = JSON.parse(ct);
-        if (cn) dailyNotes = JSON.parse(cn);
-        if (ce) events = JSON.parse(ce);
-        if (ch) holidays = JSON.parse(ch);
-
-        if (tasks.length > 0) renderTasks();
-        if (dailyNotes.length > 0) renderDailyNotes();
-        if (events.length > 0) renderCalendar();
-      } catch (e) {
-        console.warn('キャッシュ復元エラー:', e);
-      }
-    })();
-
     window.onload = function() {
-      populateTimeOptions(document.getElementById('taskTimeHour'), document.getElementById('taskTimeMinute'));
-      populateTimeOptions(document.getElementById('eventStartHour'), document.getElementById('eventStartMinute'));
-      populateTimeOptions(document.getElementById('eventEndHour'), document.getElementById('eventEndMinute'));
-
-      document.getElementById('todayLabel').innerText = todayObj.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', weekday: 'short' });
-      document.getElementById('todayNoteDateLabel').innerText = todayStr;
-      document.getElementById('taskDateInput').value = todayStr;
-
+      initCachedData();
       loadAllData();
       initSortable();
       initAutoSaveNote();
@@ -591,16 +544,36 @@
         localStorage.setItem(CACHE_TASKS_KEY, JSON.stringify(tasks));
         localStorage.setItem(CACHE_NOTES_KEY, JSON.stringify(dailyNotes));
         localStorage.setItem(CACHE_EVENTS_KEY, JSON.stringify(events));
-        localStorage.setItem(CACHE_HOLIDAYS_KEY, JSON.stringify(holidays));
       } catch (e) {}
+    }
+
+    function initCachedData() {
+      try {
+        const ct = localStorage.getItem(CACHE_TASKS_KEY);
+        const cn = localStorage.getItem(CACHE_NOTES_KEY);
+        const ce = localStorage.getItem(CACHE_EVENTS_KEY);
+        if (ct) {
+          tasks = JSON.parse(ct);
+          renderTasks();
+          document.getElementById('loading').style.display = 'none';
+        }
+        if (cn) {
+          dailyNotes = JSON.parse(cn);
+          renderDailyNotes();
+        }
+        if (ce) {
+          events = JSON.parse(ce);
+          renderCalendar();
+        }
+      } catch (e) {
+        console.warn('キャッシュ復元エラー:', e);
+      }
     }
 
     function loadAllData() {
       const syncBadge = document.getElementById('syncBadge');
       if (tasks.length > 0) {
         syncBadge.style.display = 'inline-block';
-      } else {
-        document.getElementById('loading').style.display = 'block';
       }
 
       fetch(`${GAS_API_URL}?action=getAllData`)
@@ -612,16 +585,21 @@
             tasks = res.tasks || [];
             dailyNotes = res.dailyNotes || [];
             events = res.events || [];
-            holidays = res.holidays || holidays;
             saveLocalCache();
             renderTasks();
             renderDailyNotes();
             renderCalendar();
+          } else if (tasks.length === 0) {
+            document.getElementById('loading').innerText = 'データの読み込みに失敗しました';
+            document.getElementById('loading').style.display = 'block';
           }
         })
         .catch(err => {
           syncBadge.style.display = 'none';
-          document.getElementById('loading').style.display = 'none';
+          if (tasks.length === 0) {
+            document.getElementById('loading').innerText = '通信エラーが発生しました';
+            document.getElementById('loading').style.display = 'block';
+          }
           console.error(err);
         });
     }
@@ -727,6 +705,10 @@
       });
     }
 
+    document.getElementById('todayLabel').innerText = todayObj.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', weekday: 'short' });
+    document.getElementById('todayNoteDateLabel').innerText = todayStr;
+    document.getElementById('taskDateInput').value = todayStr;
+
     function switchTab(tab) {
       currentTab = tab;
       document.getElementById('tabTasks').classList.toggle('active', tab === 'tasks');
@@ -737,7 +719,12 @@
       document.getElementById('notesView').style.display = (tab === 'notes') ? 'block' : 'none';
       document.getElementById('calendarView').style.display = (tab === 'calendar') ? 'block' : 'none';
 
-      document.getElementById('fabAdd').style.display = (tab === 'notes') ? 'none' : 'flex';
+      const fab = document.getElementById('fabAdd');
+      if (tab === 'notes') {
+        fab.style.display = 'none';
+      } else {
+        fab.style.display = 'flex';
+      }
 
       if (tab === 'calendar') {
         renderCalendar();
@@ -906,7 +893,9 @@
     const memoField = document.getElementById('memoField');
     const btnDelete = document.getElementById('btnDelete');
 
-    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) modal.classList.remove('active');
+    });
 
     function initKeyboardSubmit() {
       titleInput.addEventListener('keydown', function(e) {
@@ -1174,7 +1163,9 @@
         if (res.status === 'success') {
           statusLabel.innerText = '✓ 保存済み';
           setTimeout(() => {
-            if (statusLabel.innerText === '✓ 保存済み') statusLabel.innerText = '';
+            if (statusLabel.innerText === '✓ 保存済み') {
+              statusLabel.innerText = '';
+            }
           }, 2000);
 
           const idx = dailyNotes.findIndex(n => n.date === todayStr);
@@ -1234,8 +1225,85 @@
     };
 
     // ==========================================
-    // カレンダーUI機能（祝日・色分け・案A+B対応）
+    // カレンダーUI機能 & 日本の祝日判定ロジック
     // ==========================================
+
+    function getJapaneseHolidays(year) {
+      const holidays = new Set();
+      const add = (m, d) => holidays.add(`${year}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+
+      // 固定祝日
+      add(1, 1);   // 元日
+      add(2, 11);  // 建国記念の日
+      add(2, 23);  // 天皇誕生日
+      add(4, 29);  // 昭和の日
+      add(5, 3);   // 憲法記念日
+      add(5, 4);   // みどりの日
+      add(5, 5);   // こどもの日
+      add(8, 11);  // 山の日
+      add(11, 3);  // 文化の日
+      add(11, 23); // 勤労感謝の日
+
+      // ハッピーマンデー (第N月曜日)
+      const getNthMonday = (m, n) => {
+        let count = 0;
+        for (let d = 1; d <= 31; d++) {
+          const date = new Date(year, m - 1, d);
+          if (date.getMonth() !== m - 1) break;
+          if (date.getDay() === 1) {
+            count++;
+            if (count === n) return d;
+          }
+        }
+        return 0;
+      };
+
+      add(1, getNthMonday(1, 2));  // 成人の日
+      add(7, getNthMonday(7, 3));  // 海の日
+      add(9, getNthMonday(9, 3));  // 敬老の日
+      add(10, getNthMonday(10, 2)); // スポーツの日
+
+      // 春分・秋分の日 (2000〜2099年対応の計算式)
+      const yMod = year - 1980;
+      const vernalEquinox = Math.floor(20.8431 + 0.242194 * yMod - Math.floor(yMod / 4));
+      const autumnEquinox = Math.floor(23.2488 + 0.242194 * yMod - Math.floor(yMod / 4));
+      add(3, vernalEquinox);
+      add(9, autumnEquinox);
+
+      // 振替休日の判定
+      const baseList = Array.from(holidays).sort();
+      baseList.forEach(dateStr => {
+        const parts = dateStr.split('-');
+        const dObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        if (dObj.getDay() === 0) { // 日曜日が祝日の場合
+          let nextD = new Date(dObj);
+          while (true) {
+            nextD.setDate(nextD.getDate() + 1);
+            const nStr = getLocalDateString(nextD);
+            if (!holidays.has(nStr)) {
+              holidays.add(nStr);
+              break;
+            }
+          }
+        }
+      });
+
+      // 国民の休日 (祝日と祝日に挟まれた平日: 主に9月のシルバーウィーク)
+      for (let m = 1; m <= 12; m++) {
+        const daysInMonth = new Date(year, m, 0).getDate();
+        for (let d = 2; d < daysInMonth; d++) {
+          const curStr = `${year}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          const prevStr = `${year}-${String(m).padStart(2, '0')}-${String(d - 1).padStart(2, '0')}`;
+          const nextStr = `${year}-${String(m).padStart(2, '0')}-${String(d + 1).padStart(2, '0')}`;
+          const dObj = new Date(year, m - 1, d);
+          if (holidays.has(prevStr) && holidays.has(nextStr) && !holidays.has(curStr) && dObj.getDay() !== 0) {
+            holidays.add(curStr);
+          }
+        }
+      }
+
+      return holidays;
+    }
 
     function changeMonth(delta) {
       currentCalDate.setMonth(currentCalDate.getMonth() + delta);
@@ -1260,8 +1328,9 @@
       const startDay = firstDayOfMonth.getDay();
       const lastDateOfMonth = new Date(year, month + 1, 0).getDate();
       const lastDateOfPrevMonth = new Date(year, month, 0).getDate();
+      const yearHolidays = getJapaneseHolidays(year);
 
-      // 前月余白
+      // 前月のはみ出し日数
       for (let i = startDay - 1; i >= 0; i--) {
         const d = lastDateOfPrevMonth - i;
         const cell = document.createElement('div');
@@ -1272,41 +1341,24 @@
 
       // 当月の日付
       for (let day = 1; day <= lastDateOfMonth; day++) {
-        const dObj = new Date(year, month, day);
-        const dayOfWeek = dObj.getDay();
         const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const cellDate = new Date(year, month, day);
+        const dayOfWeek = cellDate.getDay();
+
         const isToday = (dStr === todayStr);
         const isSelected = (dStr === selectedCalDateStr);
-        const isHoliday = !!holidays[dStr];
+        const hasEvent = events.some(e => e.date === dStr && !e.isDeleted);
+        const isHoliday = yearHolidays.has(dStr);
 
-        // 日付別予定の取得
-        const dayEvents = events.filter(e => e.date === dStr && !e.isDeleted);
-        const evCount = dayEvents.length;
-
-        // クラス判定（土曜青、日・祝赤、予定ありハイライト）
-        let classes = ['cal-cell'];
-        if (dayOfWeek === 0) classes.push('is-sunday');
-        if (dayOfWeek === 6) classes.push('is-saturday');
-        if (isHoliday) classes.push('is-holiday');
-        if (isToday) classes.push('is-today');
-        if (isSelected) classes.push('is-selected');
-        if (evCount > 0) classes.push('has-event');
-
-        // 予定インジケーター（案A背景ハイライト ＋ 案Bバー&件数バッジ）
-        let indicatorHtml = '';
-        if (evCount > 0) {
-          indicatorHtml = `
-            <div class="cal-event-indicator">
-              <div class="cal-event-bar"></div>
-              ${evCount > 1 ? `<span class="cal-event-count">${evCount}</span>` : ''}
-            </div>
-          `;
-        }
+        let colorClass = '';
+        if (dayOfWeek === 0) colorClass = 'is-sun';
+        else if (dayOfWeek === 6) colorClass = 'is-sat';
+        if (isHoliday) colorClass = 'is-holiday';
 
         const cell = document.createElement('div');
-        cell.className = classes.join(' ');
-        cell.title = isHoliday ? holidays[dStr] : '';
-        cell.innerHTML = `<span>${day}</span>${indicatorHtml}`;
+        cell.className = `cal-cell ${colorClass} ${hasEvent ? 'has-event' : ''} ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}`;
+        cell.innerHTML = `<span>${day}</span>${hasEvent ? '<div class="event-bar"></div>' : ''}`;
+        
         cell.onclick = () => {
           selectedCalDateStr = dStr;
           renderCalendar();
@@ -1322,11 +1374,10 @@
       const listEl = document.getElementById('selectedEventsList');
       listEl.innerHTML = '';
 
-      const holidayName = holidays[selectedCalDateStr] ? ` (${holidays[selectedCalDateStr]})` : '';
       if (selectedCalDateStr === todayStr) {
-        titleEl.innerText = `今日の予定 (${selectedCalDateStr})${holidayName}`;
+        titleEl.innerText = `今日の予定 (${selectedCalDateStr})`;
       } else {
-        titleEl.innerText = `${selectedCalDateStr} の予定${holidayName}`;
+        titleEl.innerText = `${selectedCalDateStr} の予定`;
       }
 
       const dayEvents = events
@@ -1343,7 +1394,7 @@
         card.className = 'event-card';
         card.onclick = () => openEditEventModal(ev.id);
 
-        let timeText = '終日';
+        let timeText = '時間指定なし';
         if (ev.startTime && ev.endTime) {
           timeText = `${ev.startTime} - ${ev.endTime}`;
         } else if (ev.startTime) {
@@ -1365,14 +1416,15 @@
     const eventIdInput = document.getElementById('eventIdInput');
     const eventTitleInput = document.getElementById('eventTitleInput');
     const eventDateInput = document.getElementById('eventDateInput');
-    const eventStartHour = document.getElementById('eventStartHour');
-    const eventStartMinute = document.getElementById('eventStartMinute');
-    const eventEndHour = document.getElementById('eventEndHour');
-    const eventEndMinute = document.getElementById('eventEndMinute');
+    const eventStartTimeInput = document.getElementById('eventStartTimeInput');
+    const eventEndTimeInput = document.getElementById('eventEndTimeInput');
     const eventMemoInput = document.getElementById('eventMemoInput');
     const btnEventDelete = document.getElementById('btnEventDelete');
 
-    eventModal.addEventListener('click', e => { if (e.target === eventModal) eventModal.classList.remove('active'); });
+    eventModal.addEventListener('click', function(e) {
+      if (e.target === eventModal) eventModal.classList.remove('active');
+    });
+
     document.getElementById('btnEventCancel').onclick = () => eventModal.classList.remove('active');
 
     function openAddEventModal() {
@@ -1380,10 +1432,8 @@
       eventIdInput.value = '';
       eventTitleInput.value = '';
       eventDateInput.value = selectedCalDateStr || todayStr;
-      eventStartHour.value = '';
-      eventStartMinute.value = '';
-      eventEndHour.value = '';
-      eventEndMinute.value = '';
+      eventStartTimeInput.value = '';
+      eventEndTimeInput.value = '';
       eventMemoInput.value = '';
       btnEventDelete.style.display = 'none';
       eventModal.classList.add('active');
@@ -1398,25 +1448,8 @@
       eventIdInput.value = ev.id;
       eventTitleInput.value = ev.title;
       eventDateInput.value = ev.date;
-
-      if (ev.startTime && ev.startTime.includes(':')) {
-        const s = ev.startTime.split(':');
-        eventStartHour.value = s[0].padStart(2, '0');
-        eventStartMinute.value = s[1].padStart(2, '0');
-      } else {
-        eventStartHour.value = '';
-        eventStartMinute.value = '';
-      }
-
-      if (ev.endTime && ev.endTime.includes(':')) {
-        const eParts = ev.endTime.split(':');
-        eventEndHour.value = eParts[0].padStart(2, '0');
-        eventEndMinute.value = eParts[1].padStart(2, '0');
-      } else {
-        eventEndHour.value = '';
-        eventEndMinute.value = '';
-      }
-
+      eventStartTimeInput.value = ev.startTime || '';
+      eventEndTimeInput.value = ev.endTime || '';
       eventMemoInput.value = ev.memo || '';
       btnEventDelete.style.display = 'block';
       eventModal.classList.add('active');
@@ -1427,15 +1460,8 @@
       if (!title) return;
       const id = eventIdInput.value;
       const date = eventDateInput.value;
-
-      const sh = eventStartHour.value;
-      const sm = eventStartMinute.value;
-      const startTime = sh ? `${sh}:${sm || '00'}` : '';
-
-      const eh = eventEndHour.value;
-      const em = eventEndMinute.value;
-      const endTime = eh ? `${eh}:${em || '00'}` : '';
-
+      const startTime = eventStartTimeInput.value;
+      const endTime = eventEndTimeInput.value;
       const memo = eventMemoInput.value.trim();
 
       eventModal.classList.remove('active');
