@@ -221,7 +221,7 @@
 
     .cal-cell {
       position: relative;
-      height: 42px;
+      height: 44px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -258,17 +258,32 @@
       border-color: var(--primary) !important;
     }
 
-    /* 予定がある日のオレンジ横線 */
-    .cal-cell .event-bar {
-      width: 18px;
+    /* 予定の横線 & 件数インジケーター */
+    .event-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      margin-top: 1px;
+    }
+    .event-bar {
+      width: 14px;
       height: 3px;
       border-radius: 2px;
       background: #EA580C;
-      margin-top: 2px;
       flex-shrink: 0;
+    }
+    .event-count-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #EA580C;
+      line-height: 1;
     }
     .cal-cell.is-selected .event-bar {
       background: #FFFFFF !important;
+    }
+    .cal-cell.is-selected .event-count-badge {
+      color: #FFFFFF !important;
     }
 
     .events-header { display: flex; justify-content: space-between; align-items: center; margin: 12px 4px 8px 4px; }
@@ -463,14 +478,55 @@
         <input type="date" id="eventDateInput" class="input-text">
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">開始時間</label>
-          <input type="time" id="eventStartTimeInput" class="input-text">
+      <!-- 開始時間（セレクトボックス形式） -->
+      <div class="form-group">
+        <label class="form-label">開始時間（任意）</label>
+        <div class="time-picker-wrap">
+          <select id="eventStartHour" class="input-text">
+            <option value="">--時</option>
+            <option value="00">00</option><option value="01">01</option><option value="02">02</option>
+            <option value="03">03</option><option value="04">04</option><option value="05">05</option>
+            <option value="06">06</option><option value="07">07</option><option value="08">08</option>
+            <option value="09">09</option><option value="10">10</option><option value="11">11</option>
+            <option value="12">12</option><option value="13">13</option><option value="14">14</option>
+            <option value="15">15</option><option value="16">16</option><option value="17">17</option>
+            <option value="18">18</option><option value="19">19</option><option value="20">20</option>
+            <option value="21">21</option><option value="22">22</option><option value="23">23</option>
+          </select>
+          <span class="time-colon">:</span>
+          <select id="eventStartMinute" class="input-text">
+            <option value="">--分</option>
+            <option value="00">00</option><option value="05">05</option><option value="10">10</option>
+            <option value="15">15</option><option value="20">20</option><option value="25">25</option>
+            <option value="30">30</option><option value="35">35</option><option value="40">40</option>
+            <option value="45">45</option><option value="50">50</option><option value="55">55</option>
+          </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">終了時間</label>
-          <input type="time" id="eventEndTimeInput" class="input-text">
+      </div>
+
+      <!-- 終了時間（セレクトボックス形式） -->
+      <div class="form-group">
+        <label class="form-label">終了時間（任意）</label>
+        <div class="time-picker-wrap">
+          <select id="eventEndHour" class="input-text">
+            <option value="">--時</option>
+            <option value="00">00</option><option value="01">01</option><option value="02">02</option>
+            <option value="03">03</option><option value="04">04</option><option value="05">05</option>
+            <option value="06">06</option><option value="07">07</option><option value="08">08</option>
+            <option value="09">09</option><option value="10">10</option><option value="11">11</option>
+            <option value="12">12</option><option value="13">13</option><option value="14">14</option>
+            <option value="15">15</option><option value="16">16</option><option value="17">17</option>
+            <option value="18">18</option><option value="19">19</option><option value="20">20</option>
+            <option value="21">21</option><option value="22">22</option><option value="23">23</option>
+          </select>
+          <span class="time-colon">:</span>
+          <select id="eventEndMinute" class="input-text">
+            <option value="">--分</option>
+            <option value="00">00</option><option value="05">05</option><option value="10">10</option>
+            <option value="15">15</option><option value="20">20</option><option value="25">25</option>
+            <option value="30">30</option><option value="35">35</option><option value="40">40</option>
+            <option value="45">45</option><option value="50">50</option><option value="55">55</option>
+          </select>
         </div>
       </div>
 
@@ -1288,7 +1344,7 @@
         }
       });
 
-      // 国民の休日 (祝日と祝日に挟まれた平日: 主に9月のシルバーウィーク)
+      // 国民の休日 (祝日と祝日に挟まれた平日)
       for (let m = 1; m <= 12; m++) {
         const daysInMonth = new Date(year, m, 0).getDate();
         for (let d = 2; d < daysInMonth; d++) {
@@ -1347,7 +1403,10 @@
 
         const isToday = (dStr === todayStr);
         const isSelected = (dStr === selectedCalDateStr);
-        const hasEvent = events.some(e => e.date === dStr && !e.isDeleted);
+
+        // その日の有効な予定件数をカウント
+        const dayEventCount = events.filter(e => e.date === dStr && !e.isDeleted).length;
+        const hasEvent = dayEventCount > 0;
         const isHoliday = yearHolidays.has(dStr);
 
         let colorClass = '';
@@ -1357,7 +1416,18 @@
 
         const cell = document.createElement('div');
         cell.className = `cal-cell ${colorClass} ${hasEvent ? 'has-event' : ''} ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}`;
-        cell.innerHTML = `<span>${day}</span>${hasEvent ? '<div class="event-bar"></div>' : ''}`;
+        
+        let indicatorHtml = '';
+        if (hasEvent) {
+          indicatorHtml = `
+            <div class="event-indicator">
+              <span class="event-bar"></span>
+              <span class="event-count-badge">${dayEventCount}</span>
+            </div>
+          `;
+        }
+
+        cell.innerHTML = `<span>${day}</span>${indicatorHtml}`;
         
         cell.onclick = () => {
           selectedCalDateStr = dStr;
@@ -1374,15 +1444,16 @@
       const listEl = document.getElementById('selectedEventsList');
       listEl.innerHTML = '';
 
-      if (selectedCalDateStr === todayStr) {
-        titleEl.innerText = `今日の予定 (${selectedCalDateStr})`;
-      } else {
-        titleEl.innerText = `${selectedCalDateStr} の予定`;
-      }
-
       const dayEvents = events
         .filter(e => e.date === selectedCalDateStr && !e.isDeleted)
         .sort((a, b) => (a.startTime || '99:99').localeCompare(b.startTime || '99:99'));
+
+      const countLabel = `(${dayEvents.length}件)`;
+      if (selectedCalDateStr === todayStr) {
+        titleEl.innerText = `今日の予定 ${countLabel}`;
+      } else {
+        titleEl.innerText = `${selectedCalDateStr} の予定 ${countLabel}`;
+      }
 
       if (dayEvents.length === 0) {
         listEl.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center; padding:20px;">予定はありません</div>';
@@ -1416,8 +1487,10 @@
     const eventIdInput = document.getElementById('eventIdInput');
     const eventTitleInput = document.getElementById('eventTitleInput');
     const eventDateInput = document.getElementById('eventDateInput');
-    const eventStartTimeInput = document.getElementById('eventStartTimeInput');
-    const eventEndTimeInput = document.getElementById('eventEndTimeInput');
+    const eventStartHour = document.getElementById('eventStartHour');
+    const eventStartMinute = document.getElementById('eventStartMinute');
+    const eventEndHour = document.getElementById('eventEndHour');
+    const eventEndMinute = document.getElementById('eventEndMinute');
     const eventMemoInput = document.getElementById('eventMemoInput');
     const btnEventDelete = document.getElementById('btnEventDelete');
 
@@ -1432,8 +1505,10 @@
       eventIdInput.value = '';
       eventTitleInput.value = '';
       eventDateInput.value = selectedCalDateStr || todayStr;
-      eventStartTimeInput.value = '';
-      eventEndTimeInput.value = '';
+      eventStartHour.value = '';
+      eventStartMinute.value = '';
+      eventEndHour.value = '';
+      eventEndMinute.value = '';
       eventMemoInput.value = '';
       btnEventDelete.style.display = 'none';
       eventModal.classList.add('active');
@@ -1448,8 +1523,25 @@
       eventIdInput.value = ev.id;
       eventTitleInput.value = ev.title;
       eventDateInput.value = ev.date;
-      eventStartTimeInput.value = ev.startTime || '';
-      eventEndTimeInput.value = ev.endTime || '';
+
+      if (ev.startTime && ev.startTime.includes(':')) {
+        const parts = ev.startTime.split(':');
+        eventStartHour.value = parts[0].padStart(2, '0');
+        eventStartMinute.value = parts[1].padStart(2, '0');
+      } else {
+        eventStartHour.value = '';
+        eventStartMinute.value = '';
+      }
+
+      if (ev.endTime && ev.endTime.includes(':')) {
+        const parts = ev.endTime.split(':');
+        eventEndHour.value = parts[0].padStart(2, '0');
+        eventEndMinute.value = parts[1].padStart(2, '0');
+      } else {
+        eventEndHour.value = '';
+        eventEndMinute.value = '';
+      }
+
       eventMemoInput.value = ev.memo || '';
       btnEventDelete.style.display = 'block';
       eventModal.classList.add('active');
@@ -1460,8 +1552,15 @@
       if (!title) return;
       const id = eventIdInput.value;
       const date = eventDateInput.value;
-      const startTime = eventStartTimeInput.value;
-      const endTime = eventEndTimeInput.value;
+      
+      const sH = eventStartHour.value;
+      const sM = eventStartMinute.value;
+      const startTime = sH ? `${sH}:${sM || '00'}` : '';
+
+      const eH = eventEndHour.value;
+      const eM = eventEndMinute.value;
+      const endTime = eH ? `${eH}:${eM || '00'}` : '';
+
       const memo = eventMemoInput.value.trim();
 
       eventModal.classList.remove('active');
