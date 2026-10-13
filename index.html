@@ -743,6 +743,7 @@
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
         scroll: true,
+        scrollSensitivity: 120,
         scrollSpeed: 20,
         bubbleScroll: true,
         onChoose: function() {
@@ -810,7 +811,7 @@
     }
 
     function renderTasks() {
-      enforceRoutineOrder(); // 描画直前に必ず確定順序ルールを再適用
+      enforceRoutineOrder();
       const uncompletedContainer = document.getElementById('uncompletedList');
       const completedContainer = document.getElementById('completedList');
       uncompletedContainer.innerHTML = '';
@@ -1137,7 +1138,6 @@
             body: JSON.stringify({ action: 'addTask', data: newTask })
           }).catch(err => console.error('保存エラー:', err));
         } else {
-          // 優先度グループの末尾に割り込み挿入
           const pVal = parseInt(priority, 10);
           let insertIndex = -1;
 
@@ -1161,13 +1161,10 @@
             }
           }
 
-          // 固定配置ルールの完全適用
           enforceRoutineOrder();
-
           saveLocalCache();
           renderTasks();
 
-          // 決定した未完了親タスクのID順序を一緒に送信してスプレッドシート上も即座に同期整列
           const currentOrderIds = tasks.filter(t => !t.parentId && !t.completed).map(t => t.id);
 
           fetch(GAS_API_URL, {
@@ -1179,9 +1176,7 @@
       }
     };
 
-    // ==========================================
     // 【ご指定ルール100%完全準拠の並び順ロジック】
-    // ==========================================
     function enforceRoutineOrder() {
       const uncompletedParents = tasks.filter(t => !t.parentId && !t.completed);
       const otherTasks = tasks.filter(t => t.parentId || t.completed);
@@ -1207,14 +1202,12 @@
         }
       });
 
-      // 優先度1グループを完全な順番で組み立て
       const orderedP1 = [];
       if (topTask) orderedP1.push(topTask);       // 1. 作業内容・指示確認（一番上）
       orderedP1.push(...remainingP1);             // 2. その他の優先度1タスク
       if (caseTask) orderedP1.push(caseTask);     // 3. ケース記録記入
       if (fridayTask) orderedP1.push(fridayTask); // 4. 週末ミーティング（ケース記録より一番下）
 
-      // 全体を結合（優先度1グループ ➔ 優先度2以降 ➔ 完了・サブタスク）
       tasks = [...orderedP1, ...p2Plus, ...otherTasks];
     }
 
@@ -1604,6 +1597,7 @@
       eventModal.classList.add('active');
     }
 
+    // ★【完全修復版】カレンダー予定の保存処理（変数参照バグを完治）
     document.getElementById('btnEventSave').onclick = function() {
       const title = eventTitleInput.value.trim();
       if (!title) return;
@@ -1623,17 +1617,15 @@
       eventModal.classList.remove('active');
 
       if (id) {
-        const target = tasks.find(t => t.id === id);
-        if (target) {
-          target.title = title;
-          target.date = date;
-          target.time = time;
-          target.priority = priority;
-          target.repeat = repeat;
-          target.memo = memo;
-          enforceRoutineOrder();
+        const ev = events.find(e => e.id === id);
+        if (ev) {
+          ev.title = title;
+          ev.date = date;
+          ev.startTime = startTime;
+          ev.endTime = endTime;
+          ev.memo = memo;
           saveLocalCache();
-          renderTasks();
+          renderCalendar();
         }
 
         fetch(GAS_API_URL, {
