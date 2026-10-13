@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todo-list-v12';
+const CACHE_NAME = 'todo-list-v13';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
