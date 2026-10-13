@@ -631,6 +631,7 @@
         const ce = localStorage.getItem(CACHE_EVENTS_KEY);
         if (ct) {
           tasks = JSON.parse(ct);
+          enforceRoutineOrder();
           renderTasks();
           document.getElementById('loading').style.display = 'none';
         }
@@ -662,6 +663,7 @@
             tasks = res.tasks || [];
             dailyNotes = res.dailyNotes || [];
             events = res.events || [];
+            enforceRoutineOrder();
             saveLocalCache();
             renderTasks();
             renderDailyNotes();
@@ -741,7 +743,6 @@
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
         scroll: true,
-        scrollSensitivity: 120,
         scrollSpeed: 20,
         bubbleScroll: true,
         onChoose: function() {
@@ -809,6 +810,7 @@
     }
 
     function renderTasks() {
+      enforceRoutineOrder(); // 描画直前に必ず確定順序ルールを再適用
       const uncompletedContainer = document.getElementById('uncompletedList');
       const completedContainer = document.getElementById('completedList');
       uncompletedContainer.innerHTML = '';
@@ -1098,6 +1100,7 @@
           target.priority = priority;
           target.repeat = repeat;
           target.memo = memo;
+          enforceRoutineOrder();
           saveLocalCache();
           renderTasks();
         }
@@ -1125,7 +1128,16 @@
         if (parentId) {
           tasks.push(newTask);
           expandedTaskIds.add(parentId);
+          saveLocalCache();
+          renderTasks();
+
+          fetch(GAS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'addTask', data: newTask })
+          }).catch(err => console.error('保存エラー:', err));
         } else {
+          // 優先度グループの末尾に割り込み挿入
           const pVal = parseInt(priority, 10);
           let insertIndex = -1;
 
@@ -1149,67 +1161,61 @@
             }
           }
 
-          // 【ご指定ルールに完全一致させた固定配置】
+          // 固定配置ルールの完全適用
           enforceRoutineOrder();
+
+          saveLocalCache();
+          renderTasks();
+
+          // 決定した未完了親タスクのID順序を一緒に送信してスプレッドシート上も即座に同期整列
+          const currentOrderIds = tasks.filter(t => !t.parentId && !t.completed).map(t => t.id);
+
+          fetch(GAS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'addTask', data: newTask, order: currentOrderIds })
+          }).catch(err => console.error('保存エラー:', err));
         }
-
-        saveLocalCache();
-        renderTasks();
-
-        fetch(GAS_API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({ action: 'addTask', data: newTask })
-        }).catch(err => console.error('保存エラー:', err));
       }
     };
 
     // ==========================================
-    // 【ご指定ルール完全準拠の並び順ロジック】
+    // 【ご指定ルール100%完全準拠の並び順ロジック】
     // ==========================================
     function enforceRoutineOrder() {
-      // 1. 『内容・指示確認』は優先度1の1番上に配置
-      const topTaskIdx = tasks.findIndex(t => !t.parentId && !t.completed && (t.title.includes('指示確認') || t.title.includes('作業内容') || t.title.includes('内容・指示')));
-      if (topTaskIdx >= 0) {
-        const [topTask] = tasks.splice(topTaskIdx, 1);
-        tasks.unshift(topTask);
-      }
+      const uncompletedParents = tasks.filter(t => !t.parentId && !t.completed);
+      const otherTasks = tasks.filter(t => t.parentId || t.completed);
 
-      // 2. 金曜タスク（未完了で存在する場合）を取り出す
-      const fridayTaskIdx = tasks.findIndex(t => !t.parentId && !t.completed && t.repeat === '毎週金曜');
+      let topTask = null;
+      let caseTask = null;
       let fridayTask = null;
-      if (fridayTaskIdx >= 0) {
-        [fridayTask] = tasks.splice(fridayTaskIdx, 1);
-      }
+      const remainingP1 = [];
+      const p2Plus = [];
 
-      // 3. 『ケース記録記入』は優先度1の1番下に配置
-      const caseIdx = tasks.findIndex(t => !t.parentId && !t.completed && t.title.includes('ケース記録'));
-      if (caseIdx >= 0) {
-        const [caseTask] = tasks.splice(caseIdx, 1);
-        let p1Last = 0;
-        for (let i = 0; i < tasks.length; i++) {
-          if (!tasks[i].parentId && !tasks[i].completed && String(tasks[i].priority) === '1') {
-            p1Last = i + 1;
-          }
-        }
-        tasks.splice(p1Last, 0, caseTask);
-      }
-
-      // 4. 金曜タスクは『ケース記録記入』のさらに1番下に配置
-      if (fridayTask) {
-        const currentCaseIdx = tasks.findIndex(t => !t.parentId && !t.completed && t.title.includes('ケース記録'));
-        if (currentCaseIdx >= 0) {
-          tasks.splice(currentCaseIdx + 1, 0, fridayTask);
+      uncompletedParents.forEach(t => {
+        const title = t.title || '';
+        if (!topTask && (title.includes('指示確認') || title.includes('作業内容') || title.includes('内容・指示'))) {
+          topTask = t;
+        } else if (!caseTask && title.includes('ケース記録')) {
+          caseTask = t;
+        } else if (!fridayTask && (t.repeat === '毎週金曜' || title.includes('週末ミーティング') || title.includes('ミーティング'))) {
+          fridayTask = t;
+        } else if (String(t.priority) === '1') {
+          remainingP1.push(t);
         } else {
-          let p1Last = 0;
-          for (let i = 0; i < tasks.length; i++) {
-            if (!tasks[i].parentId && !tasks[i].completed && String(tasks[i].priority) === '1') {
-              p1Last = i + 1;
-            }
-          }
-          tasks.splice(p1Last, 0, fridayTask);
+          p2Plus.push(t);
         }
-      }
+      });
+
+      // 優先度1グループを完全な順番で組み立て
+      const orderedP1 = [];
+      if (topTask) orderedP1.push(topTask);       // 1. 作業内容・指示確認（一番上）
+      orderedP1.push(...remainingP1);             // 2. その他の優先度1タスク
+      if (caseTask) orderedP1.push(caseTask);     // 3. ケース記録記入
+      if (fridayTask) orderedP1.push(fridayTask); // 4. 週末ミーティング（ケース記録より一番下）
+
+      // 全体を結合（優先度1グループ ➔ 優先度2以降 ➔ 完了・サブタスク）
+      tasks = [...orderedP1, ...p2Plus, ...otherTasks];
     }
 
     btnDelete.onclick = function() {
@@ -1617,15 +1623,17 @@
       eventModal.classList.remove('active');
 
       if (id) {
-        const ev = events.find(e => e.id === id);
-        if (ev) {
-          ev.title = title;
-          ev.date = date;
-          ev.startTime = startTime;
-          ev.endTime = endTime;
-          ev.memo = memo;
+        const target = tasks.find(t => t.id === id);
+        if (target) {
+          target.title = title;
+          target.date = date;
+          target.time = time;
+          target.priority = priority;
+          target.repeat = repeat;
+          target.memo = memo;
+          enforceRoutineOrder();
           saveLocalCache();
-          renderCalendar();
+          renderTasks();
         }
 
         fetch(GAS_API_URL, {
