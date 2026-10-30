@@ -190,7 +190,7 @@
     .btn-delete { background: #FEE2E2; color: #DC2626; flex: 0.6; }
 
     /* ==========================================
-       デイリーメモ（タイトル1行省略・色分け）
+       デイリーメモ（開閉連動タイトル全文表示）
     ========================================== */
     .daily-note-container { display: flex; flex-direction: column; gap: 12px; }
     .today-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
@@ -226,12 +226,12 @@
     .past-notes-header-row { display: flex; justify-content: space-between; align-items: center; margin: 6px 4px 2px 4px; }
     .past-notes-title { font-size: 12.5px; font-weight: 700; color: var(--text-sub); }
     
-    .past-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px; box-shadow: 0 1px 6px rgba(0,0,0,0.02); }
+    .past-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px; box-shadow: 0 1px 6px rgba(0,0,0,0.02); transition: box-shadow 0.2s; }
     .past-note-header { display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; gap: 8px; }
     .past-note-meta { display: flex; align-items: center; gap: 6px; }
     .past-note-date { font-size: 12.5px; font-weight: 700; color: var(--text-main); }
     
-    /* ★ タイトルが長くても2行にならず「…」で1行に収める設定 */
+    /* ★ 閉じている時は1行「…」、開いた時（.is-open）は全文折り返し */
     .past-note-title-text {
       font-size: 13px;
       font-weight: 600;
@@ -240,6 +240,11 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      line-height: 1.4;
+    }
+    .past-note-card.is-open .past-note-title-text {
+      white-space: normal;
+      word-break: break-word;
     }
     
     .past-note-body { margin-top: 8px; font-size: 13px; line-height: 1.55; color: #374151; white-space: pre-wrap; word-break: break-word; border-top: 1px dashed var(--border); padding-top: 6px; }
@@ -1535,12 +1540,16 @@
       }
     }
 
+    // ★ 開閉と連動してカードに .is-open を付与
     function togglePastNote(clickableEl) {
-      const headerEl = clickableEl.closest('.past-note-header');
+      const card = clickableEl.closest('.past-note-card');
+      const headerEl = card.querySelector('.past-note-header');
       const bodyEl = headerEl.nextElementSibling;
       const iconEl = headerEl.querySelector('.toggle-icon');
-      const isHidden = bodyEl.classList.toggle('hidden');
-      iconEl.innerText = isHidden ? '開く ▼' : '閉じる ▲';
+      
+      const isOpen = card.classList.toggle('is-open');
+      bodyEl.classList.toggle('hidden', !isOpen);
+      iconEl.innerText = isOpen ? '閉じる ▲' : '開く ▼';
     }
 
     const noteEditModal = document.getElementById('noteEditModal');
