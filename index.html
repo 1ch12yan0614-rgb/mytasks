@@ -123,7 +123,8 @@
     }
 
     .card-actions { display: flex; align-items: center; gap: 4px; }
-    .edit-icon-btn { background: none; border: none; padding: 4px; cursor: pointer; color: #9CA3AF; display: flex; align-items: center; justify-content: center; }
+    .edit-icon-btn { background: none; border: none; padding: 4px; cursor: pointer; color: #9CA3AF; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+    .edit-icon-btn:hover { background: #F3F4F6; }
     .edit-icon-btn svg { width: 15px; height: 15px; }
 
     .priority-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 8px; min-width: 20px; text-align: center; }
@@ -201,11 +202,9 @@
     .today-note-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
     .note-status { font-size: 11.5px; color: var(--text-sub); font-weight: 500; transition: all 0.2s; }
     
-    /* カテゴリーピルボタン */
     .category-pills { display: flex; gap: 5px; margin-bottom: 9px; flex-wrap: wrap; }
     .cat-pill { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--border); background: #F9FAFB; color: var(--text-sub); cursor: pointer; transition: all 0.15s; }
     
-    /* カテゴリーごとの確定色 */
     .cat-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; display: inline-flex; align-items: center; }
     .cat-edit { background: #F3E8FF; color: #7E22CE; border-color: #D8B4FE; }
     .cat-parts { background: #FEF3C7; color: #B45309; border-color: #FDE68A; }
@@ -222,7 +221,6 @@
     .daily-textarea { width: 100%; min-height: 180px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: #FAFAFA; font-size: 14px; line-height: 1.65; outline: none; resize: vertical; font-family: inherit; }
     .daily-textarea:focus { border-color: var(--primary); background: #FFF; }
     
-    /* 過去メモの検索・フィルターバー */
     .notes-filter-box { background: var(--card-bg); border-radius: var(--radius); padding: 10px 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 8px; }
     .notes-search-input { width: 100%; padding: 7px 10px; font-size: 12.5px; border-radius: 8px; border: 1px solid var(--border); background: #F9FAFB; outline: none; }
     .notes-filter-chips { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 2px; }
@@ -233,7 +231,7 @@
     .past-notes-title { font-size: 12.5px; font-weight: 700; color: var(--text-sub); }
     
     .past-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px; box-shadow: 0 1px 6px rgba(0,0,0,0.02); }
-    .past-note-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .past-note-header { display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; }
     .past-note-meta { display: flex; align-items: center; gap: 6px; }
     .past-note-date { font-size: 12.5px; font-weight: 700; color: var(--text-main); }
     .past-note-title-text { font-size: 13px; font-weight: 600; color: var(--text-main); margin-top: 3px; }
@@ -620,6 +618,40 @@
     </div>
   </div>
 
+  <!-- ★ 過去メモ編集用モーダル -->
+  <div class="modal-overlay" id="noteEditModal">
+    <div class="modal-sheet">
+      <div class="sheet-title" id="noteEditModalTitle">メモを編集</div>
+      <input type="hidden" id="editNoteDateInput">
+
+      <div class="form-group">
+        <label class="form-label">カテゴリー</label>
+        <div class="category-pills" id="modalCategoryPills">
+          <button type="button" class="cat-pill" id="mCatBtnNone" onclick="selectModalCategory('')">なし</button>
+          <button type="button" class="cat-pill cat-edit" id="mCatBtnEdit" onclick="selectModalCategory('編集')">編集</button>
+          <button type="button" class="cat-pill cat-parts" id="mCatBtnParts" onclick="selectModalCategory('部品検品')">部品検品</button>
+          <button type="button" class="cat-pill cat-office" id="mCatBtnOffice" onclick="selectModalCategory('事務')">事務</button>
+          <button type="button" class="cat-pill cat-schedule" id="mCatBtnSchedule" onclick="selectModalCategory('スケジュール')">スケジュール</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input type="text" id="editNoteTitleInput" class="input-text" placeholder="タイトルを入力">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">内容</label>
+        <textarea id="editNoteContentInput" class="input-textarea" style="min-height: 160px;" placeholder="メモ内容を入力..."></textarea>
+      </div>
+
+      <div class="sheet-actions">
+        <button class="btn btn-cancel" id="btnEditNoteCancel">閉じる</button>
+        <button class="btn btn-submit" id="btnEditNoteSave">保存</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzQcM-lRySGUYsmMucwlgFSahz_-4tkoEvZ2SMncyJa7FgJQlG7L7AoKSKoM1gJSSCI/exec";
     const CACHE_TASKS_KEY = 'todo_tasks_cache_v2';
@@ -647,6 +679,7 @@
     let currentTouchY = 0;
 
     let todayCategory = '';
+    let editModalCategory = '';
     let pastNotesFilter = 'all';
     let pastNotesSearchTerm = '';
     let pastNotesDisplayLimit = 7;
@@ -1050,6 +1083,12 @@
           document.getElementById('btnEventSave').click();
         }
       });
+      document.getElementById('editNoteTitleInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.isComposing) {
+          e.preventDefault();
+          document.getElementById('btnEditNoteSave').click();
+        }
+      });
     }
 
     document.getElementById('fabAdd').onclick = function() {
@@ -1288,7 +1327,7 @@
     };
 
     // ==========================================
-    // デイリーメモ機能（カテゴリー色分け・タイトル・対策）
+    // デイリーメモ機能（カテゴリー色分け・タイトル・対策・過去編集）
     // ==========================================
 
     function getCategoryBadgeClass(category) {
@@ -1461,15 +1500,20 @@
           : '';
 
         item.innerHTML = `
-          <div class="past-note-header" onclick="togglePastNote(this)">
-            <div>
+          <div class="past-note-header">
+            <div style="flex: 1; min-width: 0;" onclick="togglePastNote(this)">
               <div class="past-note-meta">
                 <span class="past-note-date">${note.date}</span>
                 ${badgeHtml}
               </div>
               ${titleTextHtml}
             </div>
-            <span style="font-size:12px; color:var(--text-sub); margin-left: 8px;" class="toggle-icon">開く ▼</span>
+            <div style="display: flex; align-items: center; gap: 6px; margin-left: 8px;">
+              <button class="edit-icon-btn" onclick="openEditNoteModal('${note.date}')" title="メモを編集">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+              </button>
+              <span style="font-size:12px; color:var(--text-sub);" class="toggle-icon" onclick="togglePastNote(this.parentNode.previousElementSibling)">開く ▼</span>
+            </div>
           </div>
           <div class="past-note-body hidden">${escapeHtml(note.content || '（本文なし）')}</div>
         `;
@@ -1484,12 +1528,71 @@
       }
     }
 
-    function togglePastNote(headerEl) {
+    function togglePastNote(clickableEl) {
+      const headerEl = clickableEl.closest('.past-note-header');
       const bodyEl = headerEl.nextElementSibling;
       const iconEl = headerEl.querySelector('.toggle-icon');
       const isHidden = bodyEl.classList.toggle('hidden');
       iconEl.innerText = isHidden ? '開く ▼' : '閉じる ▲';
     }
+
+    // ★ 過去メモの編集モーダル制御
+    const noteEditModal = document.getElementById('noteEditModal');
+    const editNoteDateInput = document.getElementById('editNoteDateInput');
+    const editNoteTitleInput = document.getElementById('editNoteTitleInput');
+    const editNoteContentInput = document.getElementById('editNoteContentInput');
+
+    noteEditModal.addEventListener('click', function(e) {
+      if (e.target === noteEditModal) noteEditModal.classList.remove('active');
+    });
+
+    document.getElementById('btnEditNoteCancel').onclick = () => noteEditModal.classList.remove('active');
+
+    function selectModalCategory(cat) {
+      editModalCategory = cat;
+      document.getElementById('mCatBtnNone').classList.toggle('active', editModalCategory === '');
+      document.getElementById('mCatBtnEdit').classList.toggle('active', editModalCategory === '編集');
+      document.getElementById('mCatBtnParts').classList.toggle('active', editModalCategory === '部品検品');
+      document.getElementById('mCatBtnOffice').classList.toggle('active', editModalCategory === '事務');
+      document.getElementById('mCatBtnSchedule').classList.toggle('active', editModalCategory === 'スケジュール');
+    }
+
+    function openEditNoteModal(dateStr) {
+      const targetNote = dailyNotes.find(n => n.date === dateStr);
+      if (!targetNote) return;
+
+      document.getElementById('noteEditModalTitle').innerText = `${dateStr} のメモを編集`;
+      editNoteDateInput.value = dateStr;
+      editNoteTitleInput.value = targetNote.title || '';
+      editNoteContentInput.value = targetNote.content || '';
+      selectModalCategory(targetNote.category || '');
+
+      noteEditModal.classList.add('active');
+    }
+
+    document.getElementById('btnEditNoteSave').onclick = function() {
+      const date = editNoteDateInput.value;
+      const title = editNoteTitleInput.value.trim();
+      const content = editNoteContentInput.value;
+      const category = editModalCategory;
+
+      noteEditModal.classList.remove('active');
+
+      const idx = dailyNotes.findIndex(n => n.date === date);
+      if (idx >= 0) {
+        dailyNotes[idx].title = title;
+        dailyNotes[idx].content = content;
+        dailyNotes[idx].category = category;
+        saveLocalCache();
+        renderDailyNotes();
+      }
+
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'saveDailyNote', date, content, title, category })
+      }).catch(err => console.error('メモ更新エラー:', err));
+    };
 
     document.getElementById('completedToggle').onclick = () => {
       showCompleted = !showCompleted;
