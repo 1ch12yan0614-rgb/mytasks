@@ -192,20 +192,54 @@
     .btn-submit { background: var(--primary); color: #FFF; }
     .btn-delete { background: #FEE2E2; color: #DC2626; flex: 0.6; }
 
-    /* デイリーメモ */
-    .daily-note-container { display: flex; flex-direction: column; gap: 14px; }
+    /* ==========================================
+       デイリーメモ（カテゴリー色分け・UI改善）
+    ========================================== */
+    .daily-note-container { display: flex; flex-direction: column; gap: 12px; }
     .today-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-    .today-note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .today-note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .today-note-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
     .note-status { font-size: 11.5px; color: var(--text-sub); font-weight: 500; transition: all 0.2s; }
-    .daily-textarea { width: 100%; min-height: 260px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: #FAFAFA; font-size: 14px; line-height: 1.65; outline: none; resize: vertical; font-family: inherit; }
+    
+    /* カテゴリーピルボタン */
+    .category-pills { display: flex; gap: 5px; margin-bottom: 9px; flex-wrap: wrap; }
+    .cat-pill { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--border); background: #F9FAFB; color: var(--text-sub); cursor: pointer; transition: all 0.15s; }
+    
+    /* カテゴリーごとの確定色 */
+    .cat-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; display: inline-flex; align-items: center; }
+    .cat-edit { background: #F3E8FF; color: #7E22CE; border-color: #D8B4FE; }
+    .cat-parts { background: #FEF3C7; color: #B45309; border-color: #FDE68A; }
+    .cat-office { background: #DBEAFE; color: #1D4ED8; border-color: #BFDBFE; }
+    .cat-schedule { background: #DCFCE7; color: #15803D; border-color: #BBF7D0; }
+    
+    .cat-pill.active.cat-edit { background: #7E22CE; color: #FFF; border-color: #7E22CE; }
+    .cat-pill.active.cat-parts { background: #B45309; color: #FFF; border-color: #B45309; }
+    .cat-pill.active.cat-office { background: #1D4ED8; color: #FFF; border-color: #1D4ED8; }
+    .cat-pill.active.cat-schedule { background: #15803D; color: #FFF; border-color: #15803D; }
+
+    .note-title-input { width: 100%; padding: 8px 10px; font-size: 13.5px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border); background: #FAFAFA; outline: none; margin-bottom: 8px; font-family: inherit; }
+    .note-title-input:focus { border-color: var(--primary); background: #FFF; }
+    .daily-textarea { width: 100%; min-height: 180px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: #FAFAFA; font-size: 14px; line-height: 1.65; outline: none; resize: vertical; font-family: inherit; }
     .daily-textarea:focus { border-color: var(--primary); background: #FFF; }
     
-    .past-notes-title { font-size: 13px; font-weight: 700; color: var(--text-sub); margin: 10px 4px 6px 4px; }
-    .past-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.02); }
+    /* 過去メモの検索・フィルターバー */
+    .notes-filter-box { background: var(--card-bg); border-radius: var(--radius); padding: 10px 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 8px; }
+    .notes-search-input { width: 100%; padding: 7px 10px; font-size: 12.5px; border-radius: 8px; border: 1px solid var(--border); background: #F9FAFB; outline: none; }
+    .notes-filter-chips { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 2px; }
+    .filter-chip { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 12px; background: #F2F4F7; color: var(--text-sub); border: none; cursor: pointer; white-space: nowrap; }
+    .filter-chip.active { background: var(--primary); color: #FFF; }
+
+    .past-notes-header-row { display: flex; justify-content: space-between; align-items: center; margin: 6px 4px 2px 4px; }
+    .past-notes-title { font-size: 12.5px; font-weight: 700; color: var(--text-sub); }
+    
+    .past-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px; box-shadow: 0 1px 6px rgba(0,0,0,0.02); }
     .past-note-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .past-note-date { font-size: 13.5px; font-weight: 700; color: var(--text-main); }
+    .past-note-meta { display: flex; align-items: center; gap: 6px; }
+    .past-note-date { font-size: 12.5px; font-weight: 700; color: var(--text-main); }
+    .past-note-title-text { font-size: 13px; font-weight: 600; color: var(--text-main); margin-top: 3px; }
     .past-note-body { margin-top: 8px; font-size: 13px; line-height: 1.55; color: #374151; white-space: pre-wrap; word-break: break-word; border-top: 1px dashed var(--border); padding-top: 6px; }
+
+    .load-more-btn { width: 100%; padding: 10px; background: #FFFFFF; border: 1px solid var(--border); border-radius: 10px; font-size: 12.5px; font-weight: 600; color: var(--primary); cursor: pointer; margin-top: 4px; text-align: center; }
 
     /* カレンダー画面 */
     .cal-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 12px; }
@@ -235,30 +269,25 @@
     }
     .cal-cell.other-month { opacity: 0.25; }
     
-    /* 日にちの曜日・祝日色 */
     .cal-cell.is-sat { color: #2563EB; }
     .cal-cell.is-sun,
     .cal-cell.is-holiday { color: #DC2626; }
 
-    /* 予定がある日の薄オレンジ枠と背景 */
     .cal-cell.has-event {
       background-color: #FFF7ED;
       border-color: #FDBA74;
     }
 
-    /* 今日のハイライト */
     .cal-cell.is-today {
       border: 1.5px solid var(--primary) !important;
     }
 
-    /* 選択中のセル */
     .cal-cell.is-selected {
       background: var(--primary) !important;
       color: #FFF !important;
       border-color: var(--primary) !important;
     }
 
-    /* 予定の横線 & 件数インジケーター */
     .event-indicator {
       display: flex;
       align-items: center;
@@ -293,7 +322,6 @@
     .event-main { flex: 1; min-width: 0; }
     .event-title { font-size: 14px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* カレンダー予定のメモ表示（タスクと同一のSVGアイコン仕様） */
     .event-memo {
       font-size: 11.5px;
       color: var(--text-sub);
@@ -357,6 +385,7 @@
     <!-- デイリーメモ画面 -->
     <div id="notesView" style="display: none;">
       <div class="daily-note-container">
+        <!-- 今日のメモ入力カード -->
         <div class="today-note-card">
           <div class="today-note-header">
             <div class="today-note-title">
@@ -365,11 +394,38 @@
             </div>
             <span class="note-status" id="noteStatusLabel"></span>
           </div>
+
+          <!-- カテゴリー選択 -->
+          <div class="category-pills">
+            <button class="cat-pill" id="catBtnNone" onclick="selectTodayCategory('')">なし</button>
+            <button class="cat-pill cat-edit" id="catBtnEdit" onclick="selectTodayCategory('編集')">編集</button>
+            <button class="cat-pill cat-parts" id="catBtnParts" onclick="selectTodayCategory('部品検品')">部品検品</button>
+            <button class="cat-pill cat-office" id="catBtnOffice" onclick="selectTodayCategory('事務')">事務</button>
+            <button class="cat-pill cat-schedule" id="catBtnSchedule" onclick="selectTodayCategory('スケジュール')">スケジュール</button>
+          </div>
+
+          <input type="text" id="todayNoteTitleInput" class="note-title-input" placeholder="タイトル（任意）">
           <textarea id="todayNoteInput" class="daily-textarea" placeholder="今日思いついたことや日記、メモを入力..."></textarea>
         </div>
 
-        <div class="past-notes-title">過去のメモ</div>
+        <!-- 過去メモの絞り込み・検索 -->
+        <div class="notes-filter-box">
+          <input type="text" id="notesSearchInput" class="notes-search-input" placeholder="🔍 過去のメモを検索...">
+          <div class="notes-filter-chips">
+            <button class="filter-chip active" onclick="filterPastNotes('all', this)">すべて</button>
+            <button class="filter-chip" onclick="filterPastNotes('編集', this)">編集</button>
+            <button class="filter-chip" onclick="filterPastNotes('部品検品', this)">部品検品</button>
+            <button class="filter-chip" onclick="filterPastNotes('事務', this)">事務</button>
+            <button class="filter-chip" onclick="filterPastNotes('スケジュール', this)">スケジュール</button>
+          </div>
+        </div>
+
+        <div class="past-notes-header-row">
+          <div class="past-notes-title">過去のメモ</div>
+          <span id="pastNotesCount" style="font-size: 11.5px; color: var(--text-sub);"></span>
+        </div>
         <div id="pastNotesList"></div>
+        <button id="btnLoadMoreNotes" class="load-more-btn" style="display: none;" onclick="loadMorePastNotes()">過去のメモをもっと見る</button>
       </div>
     </div>
 
@@ -590,6 +646,11 @@
     let autoScrollTimer = null;
     let currentTouchY = 0;
 
+    let todayCategory = '';
+    let pastNotesFilter = 'all';
+    let pastNotesSearchTerm = '';
+    let pastNotesDisplayLimit = 7;
+
     function getLocalDateString(d = new Date()) {
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -743,7 +804,6 @@
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
         scroll: true,
-        scrollSensitivity: 120,
         scrollSpeed: 20,
         bubbleScroll: true,
         onChoose: function() {
@@ -1176,7 +1236,6 @@
       }
     };
 
-    // 【ご指定ルール100%完全準拠の並び順ロジック】
     function enforceRoutineOrder() {
       const uncompletedParents = tasks.filter(t => !t.parentId && !t.completed);
       const otherTasks = tasks.filter(t => t.parentId || t.completed);
@@ -1203,10 +1262,10 @@
       });
 
       const orderedP1 = [];
-      if (topTask) orderedP1.push(topTask);       // 1. 作業内容・指示確認（一番上）
-      orderedP1.push(...remainingP1);             // 2. その他の優先度1タスク
-      if (caseTask) orderedP1.push(caseTask);     // 3. ケース記録記入
-      if (fridayTask) orderedP1.push(fridayTask); // 4. 週末ミーティング（ケース記録より一番下）
+      if (topTask) orderedP1.push(topTask);
+      orderedP1.push(...remainingP1);
+      if (caseTask) orderedP1.push(caseTask);
+      if (fridayTask) orderedP1.push(fridayTask);
 
       tasks = [...orderedP1, ...p2Plus, ...otherTasks];
     }
@@ -1228,17 +1287,48 @@
       });
     };
 
+    // ==========================================
+    // デイリーメモ機能（カテゴリー色分け・タイトル・対策）
+    // ==========================================
+
+    function getCategoryBadgeClass(category) {
+      if (category === '編集') return 'cat-edit';
+      if (category === '部品検品') return 'cat-parts';
+      if (category === '事務') return 'cat-office';
+      if (category === 'スケジュール') return 'cat-schedule';
+      return '';
+    }
+
+    function selectTodayCategory(cat) {
+      todayCategory = cat;
+      updateCategoryPillUI();
+      autoSaveTodayNote();
+    }
+
+    function updateCategoryPillUI() {
+      document.getElementById('catBtnNone').classList.toggle('active', todayCategory === '');
+      document.getElementById('catBtnEdit').classList.toggle('active', todayCategory === '編集');
+      document.getElementById('catBtnParts').classList.toggle('active', todayCategory === '部品検品');
+      document.getElementById('catBtnOffice').classList.toggle('active', todayCategory === '事務');
+      document.getElementById('catBtnSchedule').classList.toggle('active', todayCategory === 'スケジュール');
+    }
+
     function initAutoSaveNote() {
       const noteInput = document.getElementById('todayNoteInput');
+      const titleInput = document.getElementById('todayNoteTitleInput');
+      const searchInput = document.getElementById('notesSearchInput');
       const statusLabel = document.getElementById('noteStatusLabel');
 
-      noteInput.addEventListener('input', function() {
+      const triggerSave = () => {
         statusLabel.innerText = '入力中...';
         clearTimeout(noteSaveTimeout);
         noteSaveTimeout = setTimeout(() => {
           autoSaveTodayNote();
         }, 800);
-      });
+      };
+
+      noteInput.addEventListener('input', triggerSave);
+      titleInput.addEventListener('input', triggerSave);
 
       noteInput.addEventListener('blur', function() {
         if (noteSaveTimeout) {
@@ -1247,11 +1337,25 @@
           autoSaveTodayNote();
         }
       });
+      titleInput.addEventListener('blur', function() {
+        if (noteSaveTimeout) {
+          clearTimeout(noteSaveTimeout);
+          noteSaveTimeout = null;
+          autoSaveTodayNote();
+        }
+      });
+
+      searchInput.addEventListener('input', function() {
+        pastNotesSearchTerm = this.value.trim().toLowerCase();
+        pastNotesDisplayLimit = 7;
+        renderPastNotesList();
+      });
     }
 
     function autoSaveTodayNote() {
-      const noteInput = document.getElementById('todayNoteInput');
-      const content = noteInput.value;
+      const content = document.getElementById('todayNoteInput').value;
+      const title = document.getElementById('todayNoteTitleInput').value;
+      const category = todayCategory;
       const statusLabel = document.getElementById('noteStatusLabel');
 
       statusLabel.innerText = '保存中...';
@@ -1259,7 +1363,7 @@
       fetch(GAS_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'saveDailyNote', date: todayStr, content: content })
+        body: JSON.stringify({ action: 'saveDailyNote', date: todayStr, content, title, category })
       })
       .then(res => res.json())
       .then(res => {
@@ -1274,8 +1378,10 @@
           const idx = dailyNotes.findIndex(n => n.date === todayStr);
           if (idx >= 0) {
             dailyNotes[idx].content = content;
+            dailyNotes[idx].title = title;
+            dailyNotes[idx].category = category;
           } else {
-            dailyNotes.push({ date: todayStr, content: content });
+            dailyNotes.push({ date: todayStr, content, title, category });
           }
           saveLocalCache();
         }
@@ -1285,34 +1391,97 @@
       });
     }
 
+    function filterPastNotes(cat, btnEl) {
+      pastNotesFilter = cat;
+      const buttons = document.querySelectorAll('.filter-chip');
+      buttons.forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+      pastNotesDisplayLimit = 7;
+      renderPastNotesList();
+    }
+
+    function loadMorePastNotes() {
+      pastNotesDisplayLimit += 15;
+      renderPastNotesList();
+    }
+
     function renderDailyNotes() {
       const todayNote = dailyNotes.find(n => n.date === todayStr);
-      document.getElementById('todayNoteInput').value = todayNote ? todayNote.content : '';
+      document.getElementById('todayNoteInput').value = todayNote ? (todayNote.content || '') : '';
+      document.getElementById('todayNoteTitleInput').value = todayNote ? (todayNote.title || '') : '';
+      todayCategory = todayNote ? (todayNote.category || '') : '';
+      updateCategoryPillUI();
 
+      renderPastNotesList();
+    }
+
+    function renderPastNotesList() {
       const pastListContainer = document.getElementById('pastNotesList');
+      const countLabel = document.getElementById('pastNotesCount');
+      const btnLoadMore = document.getElementById('btnLoadMoreNotes');
       pastListContainer.innerHTML = '';
 
-      const pastNotes = dailyNotes
-        .filter(n => n.date !== todayStr && n.content && n.content.trim() !== '')
-        .sort((a, b) => b.date.localeCompare(a.date));
+      let filtered = dailyNotes.filter(n => n.date !== todayStr && ((n.content && n.content.trim() !== '') || (n.title && n.title.trim() !== '')));
 
-      if (pastNotes.length === 0) {
-        pastListContainer.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center; padding:16px;">過去のメモはまだありません</div>';
+      if (pastNotesFilter !== 'all') {
+        filtered = filtered.filter(n => n.category === pastNotesFilter);
+      }
+
+      if (pastNotesSearchTerm) {
+        filtered = filtered.filter(n => {
+          const t = (n.title || '').toLowerCase();
+          const c = (n.content || '').toLowerCase();
+          return t.includes(pastNotesSearchTerm) || c.includes(pastNotesSearchTerm);
+        });
+      }
+
+      filtered.sort((a, b) => b.date.localeCompare(a.date));
+      countLabel.innerText = `${filtered.length}件`;
+
+      if (filtered.length === 0) {
+        pastListContainer.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center; padding:16px;">該当するメモはありません</div>';
+        btnLoadMore.style.display = 'none';
         return;
       }
 
-      pastNotes.forEach(note => {
+      const displayList = filtered.slice(0, pastNotesDisplayLimit);
+
+      displayList.forEach(note => {
         const item = document.createElement('div');
         item.className = 'past-note-card';
+
+        let badgeHtml = '';
+        if (note.category) {
+          const bClass = getCategoryBadgeClass(note.category);
+          badgeHtml = `<span class="cat-badge ${bClass}">${escapeHtml(note.category)}</span>`;
+        }
+
+        const titleTextHtml = note.title 
+          ? `<div class="past-note-title-text">${escapeHtml(note.title)}</div>` 
+          : '';
+
         item.innerHTML = `
           <div class="past-note-header" onclick="togglePastNote(this)">
-            <span class="past-note-date">${note.date}</span>
-            <span style="font-size:12px; color:var(--text-sub);" class="toggle-icon">開く ▼</span>
+            <div>
+              <div class="past-note-meta">
+                <span class="past-note-date">${note.date}</span>
+                ${badgeHtml}
+              </div>
+              ${titleTextHtml}
+            </div>
+            <span style="font-size:12px; color:var(--text-sub); margin-left: 8px;" class="toggle-icon">開く ▼</span>
           </div>
-          <div class="past-note-body hidden">${escapeHtml(note.content)}</div>
+          <div class="past-note-body hidden">${escapeHtml(note.content || '（本文なし）')}</div>
         `;
         pastListContainer.appendChild(item);
       });
+
+      if (filtered.length > pastNotesDisplayLimit) {
+        btnLoadMore.style.display = 'block';
+        btnLoadMore.innerText = `過去のメモをもっと見る (残り ${filtered.length - pastNotesDisplayLimit} 件)`;
+      } else {
+        btnLoadMore.style.display = 'none';
+      }
     }
 
     function togglePastNote(headerEl) {
@@ -1597,7 +1766,6 @@
       eventModal.classList.add('active');
     }
 
-    // ★【完全修復版】カレンダー予定の保存処理（変数参照バグを完治）
     document.getElementById('btnEventSave').onclick = function() {
       const title = eventTitleInput.value.trim();
       if (!title) return;
