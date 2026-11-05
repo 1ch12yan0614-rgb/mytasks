@@ -190,7 +190,7 @@
     .btn-delete { background: #FEE2E2; color: #DC2626; flex: 0.6; }
 
     /* ==========================================
-       デイリーメモ（開閉連動タイトル全文表示）
+       デイリーメモ（全14カテゴリー・複数選択・検索UI）
     ========================================== */
     .daily-note-container { display: flex; flex-direction: column; gap: 12px; }
     .today-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
@@ -198,29 +198,119 @@
     .today-note-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
     .note-status { font-size: 11.5px; color: var(--text-sub); font-weight: 500; transition: all 0.2s; }
     
-    .category-pills { display: flex; gap: 5px; margin-bottom: 9px; flex-wrap: wrap; }
-    .cat-pill { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--border); background: #F9FAFB; color: var(--text-sub); cursor: pointer; transition: all 0.15s; }
+    /* 複数選択ピルボタン一覧 */
+    .category-pills-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 10px;
+      max-height: 110px;
+      overflow-y: auto;
+      padding: 2px 1px;
+    }
+    .cat-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3.5px 9px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #F9FAFB;
+      color: var(--text-sub);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
     
-    .cat-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; display: inline-flex; align-items: center; flex-shrink: 0; }
-    .cat-edit { background: #F3E8FF; color: #7E22CE; border-color: #D8B4FE; }
-    .cat-parts { background: #FEF3C7; color: #B45309; border-color: #FDE68A; }
-    .cat-office { background: #DBEAFE; color: #1D4ED8; border-color: #BFDBFE; }
-    .cat-schedule { background: #DCFCE7; color: #15803D; border-color: #BBF7D0; }
-    
-    .cat-pill.active.cat-edit { background: #7E22CE; color: #FFF; border-color: #7E22CE; }
-    .cat-pill.active.cat-parts { background: #B45309; color: #FFF; border-color: #B45309; }
-    .cat-pill.active.cat-office { background: #1D4ED8; color: #FFF; border-color: #1D4ED8; }
-    .cat-pill.active.cat-schedule { background: #15803D; color: #FFF; border-color: #15803D; }
+    /* 各カテゴリー固有カラーバッジ */
+    .cat-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6.5px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      border: 1px solid transparent;
+      line-height: 1.25;
+    }
+
+    /* 14カテゴリーカラー定義 */
+    .c-動画編集 { background: #F3E8FF; color: #7E22CE; border-color: #E9D5FF; }
+    .c-部品検品 { background: #FEF3C7; color: #B45309; border-color: #FDE68A; }
+    .c-ウエス   { background: #F5F5F4; color: #57534E; border-color: #E7E5E4; }
+    .c-Canva    { background: #E0F2FE; color: #0284C7; border-color: #BAE6FD; }
+    .c-PC基礎トレ { background: #E0E7FF; color: #4338CA; border-color: #C7D2FE; }
+    .c-雑務     { background: #F1F5F9; color: #475569; border-color: #CBD5E1; }
+    .c-A支援    { background: #FFE4E6; color: #E11D48; border-color: #FECDD3; }
+    .c-B支援    { background: #FCE7F3; color: #BE185D; border-color: #FBCFE8; }
+    .c-外部対応 { background: #DCFCE7; color: #15803D; border-color: #BBF7D0; }
+    .c-事務     { background: #DBEAFE; color: #1D4ED8; border-color: #BFDBFE; }
+    .c-議事録   { background: #CCFBF1; color: #0F766E; border-color: #99F6E4; }
+    .c-予定     { background: #FEF9C3; color: #A16207; border-color: #FEF08A; }
+    .c-メモ     { background: #EDE9FE; color: #6D28D9; border-color: #DDD6FE; }
+    .c-その他   { background: #F3F4F6; color: #4B5563; border-color: #E5E7EB; }
+
+    /* ピルボタンのActive状態（塗りつぶし） */
+    .cat-pill.active {
+      font-weight: 700;
+      border-color: currentColor;
+    }
+    .cat-pill.active.c-動画編集 { background: #7E22CE; color: #FFF; border-color: #7E22CE; }
+    .cat-pill.active.c-部品検品 { background: #B45309; color: #FFF; border-color: #B45309; }
+    .cat-pill.active.c-ウエス   { background: #57534E; color: #FFF; border-color: #57534E; }
+    .cat-pill.active.c-Canva    { background: #0284C7; color: #FFF; border-color: #0284C7; }
+    .cat-pill.active.c-PC基礎トレ { background: #4338CA; color: #FFF; border-color: #4338CA; }
+    .cat-pill.active.c-雑務     { background: #475569; color: #FFF; border-color: #475569; }
+    .cat-pill.active.c-A支援    { background: #E11D48; color: #FFF; border-color: #E11D48; }
+    .cat-pill.active.c-B支援    { background: #BE185D; color: #FFF; border-color: #BE185D; }
+    .cat-pill.active.c-外部対応 { background: #15803D; color: #FFF; border-color: #15803D; }
+    .cat-pill.active.c-事務     { background: #1D4ED8; color: #FFF; border-color: #1D4ED8; }
+    .cat-pill.active.c-議事録   { background: #0F766E; color: #FFF; border-color: #0F766E; }
+    .cat-pill.active.c-予定     { background: #A16207; color: #FFF; border-color: #A16207; }
+    .cat-pill.active.c-メモ     { background: #6D28D9; color: #FFF; border-color: #6D28D9; }
+    .cat-pill.active.c-その他   { background: #4B5563; color: #FFF; border-color: #4B5563; }
+    .cat-pill.active.c-none     { background: var(--text-main); color: #FFF; border-color: var(--text-main); }
 
     .note-title-input { width: 100%; padding: 8px 10px; font-size: 13.5px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border); background: #FAFAFA; outline: none; margin-bottom: 8px; font-family: inherit; }
     .note-title-input:focus { border-color: var(--primary); background: #FFF; }
     .daily-textarea { width: 100%; min-height: 180px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: #FAFAFA; font-size: 14px; line-height: 1.65; outline: none; resize: vertical; font-family: inherit; }
     .daily-textarea:focus { border-color: var(--primary); background: #FFF; }
     
+    /* 検索バー（モノクロ線画SVG） */
     .notes-filter-box { background: var(--card-bg); border-radius: var(--radius); padding: 10px 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 8px; }
-    .notes-search-input { width: 100%; padding: 7px 10px; font-size: 12.5px; border-radius: 8px; border: 1px solid var(--border); background: #F9FAFB; outline: none; }
-    .notes-filter-chips { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 2px; }
-    .filter-chip { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 12px; background: #F2F4F7; color: var(--text-sub); border: none; cursor: pointer; white-space: nowrap; }
+    
+    .search-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      width: 15px;
+      height: 15px;
+      stroke: var(--text-sub);
+      pointer-events: none;
+    }
+    .notes-search-input {
+      width: 100%;
+      padding: 8px 10px 8px 32px;
+      font-size: 13px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #F9FAFB;
+      outline: none;
+      font-family: inherit;
+    }
+    .notes-search-input:focus { border-color: var(--primary); background: #FFF; }
+
+    .notes-filter-chips { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 3px; scrollbar-width: none; }
+    .notes-filter-chips::-webkit-scrollbar { display: none; }
+    .filter-chip { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 12px; background: #F2F4F7; color: var(--text-sub); border: none; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
     .filter-chip.active { background: var(--primary); color: #FFF; }
 
     .past-notes-header-row { display: flex; justify-content: space-between; align-items: center; margin: 6px 4px 2px 4px; }
@@ -228,15 +318,14 @@
     
     .past-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px; box-shadow: 0 1px 6px rgba(0,0,0,0.02); transition: box-shadow 0.2s; }
     .past-note-header { display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; gap: 8px; }
-    .past-note-meta { display: flex; align-items: center; gap: 6px; }
-    .past-note-date { font-size: 12.5px; font-weight: 700; color: var(--text-main); }
+    .past-note-meta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .past-note-date { font-size: 12.5px; font-weight: 700; color: var(--text-main); margin-right: 2px; }
     
-    /* ★ 閉じている時は1行「…」、開いた時（.is-open）は全文折り返し */
     .past-note-title-text {
       font-size: 13px;
       font-weight: 600;
       color: var(--text-main);
-      margin-top: 3px;
+      margin-top: 4px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -405,29 +494,23 @@
             <span class="note-status" id="noteStatusLabel"></span>
           </div>
 
-          <!-- カテゴリー選択 -->
-          <div class="category-pills">
-            <button class="cat-pill" id="catBtnNone" onclick="selectTodayCategory('')">なし</button>
-            <button class="cat-pill cat-edit" id="catBtnEdit" onclick="selectTodayCategory('編集')">編集</button>
-            <button class="cat-pill cat-parts" id="catBtnParts" onclick="selectTodayCategory('部品検品')">部品検品</button>
-            <button class="cat-pill cat-office" id="catBtnOffice" onclick="selectTodayCategory('事務')">事務</button>
-            <button class="cat-pill cat-schedule" id="catBtnSchedule" onclick="selectTodayCategory('スケジュール')">スケジュール</button>
-          </div>
+          <!-- カテゴリー複数選択ピルボタン -->
+          <div class="category-pills-wrap" id="todayCategoryPills"></div>
 
           <input type="text" id="todayNoteTitleInput" class="note-title-input" placeholder="タイトル（任意）">
           <textarea id="todayNoteInput" class="daily-textarea" placeholder="今日思いついたことや日記、メモを入力..."></textarea>
         </div>
 
-        <!-- 過去メモの絞り込み・検索 -->
+        <!-- 過去メモの絞り込み・検索バー（モノクロ線画アイコン） -->
         <div class="notes-filter-box">
-          <input type="text" id="notesSearchInput" class="notes-search-input" placeholder="🔍 過去のメモを検索...">
-          <div class="notes-filter-chips">
-            <button class="filter-chip active" onclick="filterPastNotes('all', this)">すべて</button>
-            <button class="filter-chip" onclick="filterPastNotes('編集', this)">編集</button>
-            <button class="filter-chip" onclick="filterPastNotes('部品検品', this)">部品検品</button>
-            <button class="filter-chip" onclick="filterPastNotes('事務', this)">事務</button>
-            <button class="filter-chip" onclick="filterPastNotes('スケジュール', this)">スケジュール</button>
+          <div class="search-input-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="notesSearchInput" class="notes-search-input" placeholder="過去のメモを検索...">
           </div>
+          <div class="notes-filter-chips" id="notesFilterChips"></div>
         </div>
 
         <div class="past-notes-header-row">
@@ -637,14 +720,8 @@
       <input type="hidden" id="editNoteDateInput">
 
       <div class="form-group">
-        <label class="form-label">カテゴリー</label>
-        <div class="category-pills" id="modalCategoryPills">
-          <button type="button" class="cat-pill" id="mCatBtnNone" onclick="selectModalCategory('')">なし</button>
-          <button type="button" class="cat-pill cat-edit" id="mCatBtnEdit" onclick="selectModalCategory('編集')">編集</button>
-          <button type="button" class="cat-pill cat-parts" id="mCatBtnParts" onclick="selectModalCategory('部品検品')">部品検品</button>
-          <button type="button" class="cat-pill cat-office" id="mCatBtnOffice" onclick="selectModalCategory('事務')">事務</button>
-          <button type="button" class="cat-pill cat-schedule" id="mCatBtnSchedule" onclick="selectModalCategory('スケジュール')">スケジュール</button>
-        </div>
+        <label class="form-label">カテゴリー（複数選択可）</label>
+        <div class="category-pills-wrap" id="modalCategoryPills"></div>
       </div>
 
       <div class="form-group">
@@ -674,6 +751,13 @@
       navigator.serviceWorker.register('./sw.js');
     }
 
+    // 全14カテゴリーのマスターリスト
+    const CATEGORIES = [
+      '動画編集', '部品検品', 'ウエス', 'Canva', 'PC基礎トレ',
+      '雑務', 'A支援', 'B支援', '外部対応', '事務',
+      '議事録', '予定', 'メモ', 'その他'
+    ];
+
     let tasks = [];
     let dailyNotes = [];
     let events = [];
@@ -690,8 +774,9 @@
     let autoScrollTimer = null;
     let currentTouchY = 0;
 
-    let todayCategory = '';
-    let editModalCategory = '';
+    // 複数カテゴリー管理ステート（配列）
+    let todayCategories = [];
+    let editModalCategories = [];
     let pastNotesFilter = 'all';
     let pastNotesSearchTerm = '';
     let pastNotesDisplayLimit = 7;
@@ -708,6 +793,7 @@
     selectedCalDateStr = todayStr;
 
     window.onload = function() {
+      initFilterChipsUI();
       initCachedData();
       loadAllData();
       initSortable();
@@ -1339,29 +1425,71 @@
     };
 
     // ==========================================
-    // デイリーメモ機能
+    // デイリーメモ機能（全14カテゴリー・複数選択）
     // ==========================================
 
     function getCategoryBadgeClass(category) {
-      if (category === '編集') return 'cat-edit';
-      if (category === '部品検品') return 'cat-parts';
-      if (category === '事務') return 'cat-office';
-      if (category === 'スケジュール') return 'cat-schedule';
-      return '';
+      return `c-${category}`;
     }
 
-    function selectTodayCategory(cat) {
-      todayCategory = cat;
-      updateCategoryPillUI();
+    // 文字列または配列からカテゴリー配列を取得する安全ヘルパー
+    function parseCategories(catData) {
+      if (!catData) return [];
+      if (Array.isArray(catData)) return catData.filter(Boolean);
+      return String(catData).split(',').map(s => s.trim()).filter(Boolean);
+    }
+
+    function initFilterChipsUI() {
+      const container = document.getElementById('notesFilterChips');
+      if (!container) return;
+      let html = `<button class="filter-chip active" onclick="filterPastNotes('all', this)">すべて</button>`;
+      CATEGORIES.forEach(cat => {
+        html += `<button class="filter-chip" onclick="filterPastNotes('${cat}', this)">${cat}</button>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function renderCategoryPills(containerId, currentSelectedArray, onToggleHandlerName) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const isNone = currentSelectedArray.length === 0;
+
+      let html = `<button type="button" class="cat-pill c-none ${isNone ? 'active' : ''}" onclick="${onToggleHandlerName}('')">なし</button>`;
+      CATEGORIES.forEach(cat => {
+        const isAct = currentSelectedArray.includes(cat);
+        const colClass = `c-${cat}`;
+        html += `<button type="button" class="cat-pill ${colClass} ${isAct ? 'active' : ''}" onclick="${onToggleHandlerName}('${cat}')">${cat}</button>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function toggleTodayCategory(cat) {
+      if (cat === '') {
+        todayCategories = [];
+      } else {
+        const idx = todayCategories.indexOf(cat);
+        if (idx >= 0) {
+          todayCategories.splice(idx, 1);
+        } else {
+          todayCategories.push(cat);
+        }
+      }
+      renderCategoryPills('todayCategoryPills', todayCategories, 'toggleTodayCategory');
       autoSaveTodayNote();
     }
 
-    function updateCategoryPillUI() {
-      document.getElementById('catBtnNone').classList.toggle('active', todayCategory === '');
-      document.getElementById('catBtnEdit').classList.toggle('active', todayCategory === '編集');
-      document.getElementById('catBtnParts').classList.toggle('active', todayCategory === '部品検品');
-      document.getElementById('catBtnOffice').classList.toggle('active', todayCategory === '事務');
-      document.getElementById('catBtnSchedule').classList.toggle('active', todayCategory === 'スケジュール');
+    function toggleModalCategory(cat) {
+      if (cat === '') {
+        editModalCategories = [];
+      } else {
+        const idx = editModalCategories.indexOf(cat);
+        if (idx >= 0) {
+          editModalCategories.splice(idx, 1);
+        } else {
+          editModalCategories.push(cat);
+        }
+      }
+      renderCategoryPills('modalCategoryPills', editModalCategories, 'toggleModalCategory');
     }
 
     function initAutoSaveNote() {
@@ -1406,7 +1534,7 @@
     function autoSaveTodayNote() {
       const content = document.getElementById('todayNoteInput').value;
       const title = document.getElementById('todayNoteTitleInput').value;
-      const category = todayCategory;
+      const category = todayCategories.join(', ');
       const statusLabel = document.getElementById('noteStatusLabel');
 
       statusLabel.innerText = '保存中...';
@@ -1460,8 +1588,9 @@
       const todayNote = dailyNotes.find(n => n.date === todayStr);
       document.getElementById('todayNoteInput').value = todayNote ? (todayNote.content || '') : '';
       document.getElementById('todayNoteTitleInput').value = todayNote ? (todayNote.title || '') : '';
-      todayCategory = todayNote ? (todayNote.category || '') : '';
-      updateCategoryPillUI();
+      
+      todayCategories = todayNote ? parseCategories(todayNote.category) : [];
+      renderCategoryPills('todayCategoryPills', todayCategories, 'toggleTodayCategory');
 
       renderPastNotesList();
     }
@@ -1474,15 +1603,21 @@
 
       let filtered = dailyNotes.filter(n => n.date !== todayStr && ((n.content && n.content.trim() !== '') || (n.title && n.title.trim() !== '')));
 
+      // カテゴリーフィルター（複数カテゴリーのうち1つでも合致していれば表示）
       if (pastNotesFilter !== 'all') {
-        filtered = filtered.filter(n => n.category === pastNotesFilter);
+        filtered = filtered.filter(n => {
+          const cats = parseCategories(n.category);
+          return cats.includes(pastNotesFilter);
+        });
       }
 
+      // 検索フィルター（タイトル、本文、またはカテゴリーのいずれかにヒット）
       if (pastNotesSearchTerm) {
         filtered = filtered.filter(n => {
           const t = (n.title || '').toLowerCase();
           const c = (n.content || '').toLowerCase();
-          return t.includes(pastNotesSearchTerm) || c.includes(pastNotesSearchTerm);
+          const cats = parseCategories(n.category).map(x => x.toLowerCase());
+          return t.includes(pastNotesSearchTerm) || c.includes(pastNotesSearchTerm) || cats.some(cat => cat.includes(pastNotesSearchTerm));
         });
       }
 
@@ -1501,10 +1636,13 @@
         const item = document.createElement('div');
         item.className = 'past-note-card';
 
-        let badgeHtml = '';
-        if (note.category) {
-          const bClass = getCategoryBadgeClass(note.category);
-          badgeHtml = `<span class="cat-badge ${bClass}">${escapeHtml(note.category)}</span>`;
+        const noteCats = parseCategories(note.category);
+        let badgesHtml = '';
+        if (noteCats.length > 0) {
+          badgesHtml = noteCats.map(cat => {
+            const bClass = getCategoryBadgeClass(cat);
+            return `<span class="cat-badge ${bClass}">${escapeHtml(cat)}</span>`;
+          }).join(' ');
         }
 
         const titleTextHtml = note.title 
@@ -1516,7 +1654,7 @@
             <div style="flex: 1; min-width: 0;" onclick="togglePastNote(this)">
               <div class="past-note-meta">
                 <span class="past-note-date">${note.date}</span>
-                ${badgeHtml}
+                ${badgesHtml}
               </div>
               ${titleTextHtml}
             </div>
@@ -1540,7 +1678,6 @@
       }
     }
 
-    // ★ 開閉と連動してカードに .is-open を付与
     function togglePastNote(clickableEl) {
       const card = clickableEl.closest('.past-note-card');
       const headerEl = card.querySelector('.past-note-header');
@@ -1563,15 +1700,6 @@
 
     document.getElementById('btnEditNoteCancel').onclick = () => noteEditModal.classList.remove('active');
 
-    function selectModalCategory(cat) {
-      editModalCategory = cat;
-      document.getElementById('mCatBtnNone').classList.toggle('active', editModalCategory === '');
-      document.getElementById('mCatBtnEdit').classList.toggle('active', editModalCategory === '編集');
-      document.getElementById('mCatBtnParts').classList.toggle('active', editModalCategory === '部品検品');
-      document.getElementById('mCatBtnOffice').classList.toggle('active', editModalCategory === '事務');
-      document.getElementById('mCatBtnSchedule').classList.toggle('active', editModalCategory === 'スケジュール');
-    }
-
     function openEditNoteModal(dateStr) {
       const targetNote = dailyNotes.find(n => n.date === dateStr);
       if (!targetNote) return;
@@ -1580,7 +1708,9 @@
       editNoteDateInput.value = dateStr;
       editNoteTitleInput.value = targetNote.title || '';
       editNoteContentInput.value = targetNote.content || '';
-      selectModalCategory(targetNote.category || '');
+      
+      editModalCategories = parseCategories(targetNote.category);
+      renderCategoryPills('modalCategoryPills', editModalCategories, 'toggleModalCategory');
 
       noteEditModal.classList.add('active');
     }
@@ -1589,7 +1719,7 @@
       const date = editNoteDateInput.value;
       const title = editNoteTitleInput.value.trim();
       const content = editNoteContentInput.value;
-      const category = editModalCategory;
+      const category = editModalCategories.join(', ');
 
       noteEditModal.classList.remove('active');
 
