@@ -190,7 +190,7 @@
     .btn-delete { background: #FEE2E2; color: #DC2626; flex: 0.6; }
 
     /* ==========================================
-       デイリーメモ（全14カテゴリー・複数選択・検索UI）
+       デイリーメモ（カテゴリー1段収容・複数選択・検索UI）
     ========================================== */
     .daily-note-container { display: flex; flex-direction: column; gap: 12px; }
     .today-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
@@ -235,6 +235,7 @@
       flex-shrink: 0;
       border: 1px solid transparent;
       line-height: 1.25;
+      white-space: nowrap;
     }
 
     /* 14カテゴリーカラー定義 */
@@ -253,11 +254,8 @@
     .c-メモ     { background: #EDE9FE; color: #6D28D9; border-color: #DDD6FE; }
     .c-その他   { background: #F3F4F6; color: #4B5563; border-color: #E5E7EB; }
 
-    /* ピルボタンのActive状態（塗りつぶし） */
-    .cat-pill.active {
-      font-weight: 700;
-      border-color: currentColor;
-    }
+    /* ピルボタンのActive状態 */
+    .cat-pill.active { font-weight: 700; border-color: currentColor; }
     .cat-pill.active.c-動画編集 { background: #7E22CE; color: #FFF; border-color: #7E22CE; }
     .cat-pill.active.c-部品検品 { background: #B45309; color: #FFF; border-color: #B45309; }
     .cat-pill.active.c-ウエス   { background: #57534E; color: #FFF; border-color: #57534E; }
@@ -318,9 +316,47 @@
     
     .past-note-card { background: var(--card-bg); border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px; box-shadow: 0 1px 6px rgba(0,0,0,0.02); transition: box-shadow 0.2s; }
     .past-note-header { display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; gap: 8px; }
-    .past-note-meta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-    .past-note-date { font-size: 12.5px; font-weight: 700; color: var(--text-main); margin-right: 2px; }
     
+    /* ★ カテゴリーを1段で収めるレイアウト */
+    .past-note-meta {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+    .past-note-date { font-size: 12.5px; font-weight: 700; color: var(--text-main); margin-right: 2px; flex-shrink: 0; }
+    
+    /* 閉じている時は1段（最大2個＋残り件数バッジ） */
+    .cats-closed {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+    /* 開いた時（.is-open）は全件を複数行で展開 */
+    .cats-opened {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .past-note-card.is-open .cats-closed { display: none; }
+    .past-note-card.is-open .cats-opened { display: flex; }
+
+    .cat-more-badge {
+      background: #F3F4F6;
+      color: var(--text-sub);
+      border: 1px solid var(--border);
+      font-weight: 700;
+      padding: 1.5px 5.5px;
+      border-radius: 6px;
+      font-size: 9.5px;
+      flex-shrink: 0;
+      line-height: 1.2;
+    }
+
     .past-note-title-text {
       font-size: 13px;
       font-weight: 600;
@@ -751,7 +787,6 @@
       navigator.serviceWorker.register('./sw.js');
     }
 
-    // 全14カテゴリーのマスターリスト
     const CATEGORIES = [
       '動画編集', '部品検品', 'ウエス', 'Canva', 'PC基礎トレ',
       '雑務', 'A支援', 'B支援', '外部対応', '事務',
@@ -774,7 +809,6 @@
     let autoScrollTimer = null;
     let currentTouchY = 0;
 
-    // 複数カテゴリー管理ステート（配列）
     let todayCategories = [];
     let editModalCategories = [];
     let pastNotesFilter = 'all';
@@ -1425,14 +1459,13 @@
     };
 
     // ==========================================
-    // デイリーメモ機能（全14カテゴリー・複数選択）
+    // デイリーメモ機能
     // ==========================================
 
     function getCategoryBadgeClass(category) {
       return `c-${category}`;
     }
 
-    // 文字列または配列からカテゴリー配列を取得する安全ヘルパー
     function parseCategories(catData) {
       if (!catData) return [];
       if (Array.isArray(catData)) return catData.filter(Boolean);
@@ -1603,7 +1636,6 @@
 
       let filtered = dailyNotes.filter(n => n.date !== todayStr && ((n.content && n.content.trim() !== '') || (n.title && n.title.trim() !== '')));
 
-      // カテゴリーフィルター（複数カテゴリーのうち1つでも合致していれば表示）
       if (pastNotesFilter !== 'all') {
         filtered = filtered.filter(n => {
           const cats = parseCategories(n.category);
@@ -1611,7 +1643,6 @@
         });
       }
 
-      // 検索フィルター（タイトル、本文、またはカテゴリーのいずれかにヒット）
       if (pastNotesSearchTerm) {
         filtered = filtered.filter(n => {
           const t = (n.title || '').toLowerCase();
@@ -1639,10 +1670,19 @@
         const noteCats = parseCategories(note.category);
         let badgesHtml = '';
         if (noteCats.length > 0) {
-          badgesHtml = noteCats.map(cat => {
-            const bClass = getCategoryBadgeClass(cat);
-            return `<span class="cat-badge ${bClass}">${escapeHtml(cat)}</span>`;
-          }).join(' ');
+          // 閉じた時用：最大2個＋残り件数
+          const closedVisible = noteCats.slice(0, 2);
+          const remainingCount = noteCats.length - 2;
+          const closedBadges = closedVisible.map(cat => `<span class="cat-badge ${getCategoryBadgeClass(cat)}">${escapeHtml(cat)}</span>`).join('');
+          const moreBadge = remainingCount > 0 ? `<span class="cat-more-badge">+${remainingCount}</span>` : '';
+
+          // 開いた時用：全件
+          const openedBadges = noteCats.map(cat => `<span class="cat-badge ${getCategoryBadgeClass(cat)}">${escapeHtml(cat)}</span>`).join('');
+
+          badgesHtml = `
+            <div class="cats-closed">${closedBadges}${moreBadge}</div>
+            <div class="cats-opened">${openedBadges}</div>
+          `;
         }
 
         const titleTextHtml = note.title 
